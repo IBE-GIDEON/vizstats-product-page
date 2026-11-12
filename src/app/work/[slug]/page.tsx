@@ -46,7 +46,7 @@ async function ProjectView({ params }: Params) {
         <Overview project={project} />
         <Bento project={project} />
         <Showcase project={project} />
-        <NextProject next={project.next} />
+        <NextProject next={project.next} heading={project.headings.more} />
         <Footer />
       </div>
     </main>

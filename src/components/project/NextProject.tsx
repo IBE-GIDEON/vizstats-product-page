@@ -34,7 +34,7 @@ function Box({ card }: { card: ProjectCard }) {
  * More of the studio's projects as big boxes joined into one grid: two up, two down on tablets and
  * desktop, one column on phones. Adding a project to `project.next` adds a box; extras form new rows.
  */
-export default function NextProject({ next: cards }: { next: ProjectCard[] }) {
+export default function NextProject({ next: cards, heading }: { next: ProjectCard[]; heading: [string, string] }) {
   if (cards.length === 0) return null;
 
   return (
@@ -42,7 +42,7 @@ export default function NextProject({ next: cards }: { next: ProjectCard[] }) {
       <div className="container-x">
         <Reveal className="mb-10 md:mb-14">
           <h2 className="font-display text-[clamp(32px,4.4vw,64px)] font-semibold leading-[1] tracking-[-0.045em]">
-            More <span className="text-ash-2">projects.</span>
+            {heading[0]} <span className="text-ash-2">{heading[1]}</span>
           </h2>
         </Reveal>
 

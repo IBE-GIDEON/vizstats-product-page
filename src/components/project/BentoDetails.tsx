@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { IconArrowUpRight, IconLock } from "@/components/site/icons";
+import { IconLock } from "@/components/site/icons";
 import type { InsideItem, Project } from "@/content/projects";
 import { ProductPoster } from "./HeroMedia";
 import {
@@ -361,74 +361,4 @@ function mediaFor(id: InsideItem["id"], project: Project): React.ReactNode {
 
 export function bentoDetails(project: Project): BentoDetail[] {
   return project.inside.map((item) => ({ ...item, media: mediaFor(item.id, project) }));
-}
-
-function Check() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M5 12.5l4.5 4.5L19 7.5" />
-    </svg>
-  );
-}
-
-export function BentoDetailBody({ item }: { item: BentoDetail }) {
-  return (
-    <div>
-      <div className="rounded-2xl border border-white/[0.06] bg-[radial-gradient(80%_60%_at_50%_0%,rgba(255,255,255,0.03),transparent)] p-3 sm:p-5 md:p-7">
-        {item.media}
-      </div>
-
-      <div className="mt-8 flex flex-col gap-8 md:mt-10 md:flex-row md:items-start md:justify-between md:gap-14">
-        <div className="max-w-[620px] space-y-4">
-          {item.body.map((p, i) => (
-            <p key={i} className="text-[16px] leading-[1.6] text-ash md:text-[18px]">
-              {p}
-            </p>
-          ))}
-          {item.cta && (
-            <a
-              href={item.cta.href}
-              target="_blank"
-              rel="noreferrer"
-              className="group mt-4 inline-flex items-center gap-3 rounded-full bg-[#e7f0f1] py-3 pl-5 pr-6 text-[15px] font-semibold text-[#151a1b] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.7),0_0_0_5px_rgba(231,240,241,0.07)] transition-colors duration-300 hover:bg-[#f1f7f8]"
-            >
-              <IconArrowUpRight
-                width={17}
-                height={17}
-                className="text-green-2 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-              />
-              {item.cta.label}
-            </a>
-          )}
-        </div>
-
-        {item.facts && item.facts.length > 0 && (
-          <dl className="h-fit w-full border-t border-white/[0.07] md:max-w-[400px]">
-            {item.facts.map(([k, v]) => (
-              <div key={k} className="flex items-baseline justify-between gap-6 border-b border-white/[0.07] py-3.5">
-                <dt className="shrink-0 text-[13px] text-ash-3">{k}</dt>
-                <dd className="min-w-0 break-words text-right text-[14px] font-medium text-fog">{v}</dd>
-              </div>
-            ))}
-          </dl>
-        )}
-
-        {item.chips && item.chips.length > 0 && (
-          <ul className="flex flex-wrap gap-2 md:justify-end">
-            {item.chips.map((c) => (
-              <li
-                key={c}
-                className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] py-2 pl-3 pr-4 text-[14px] font-medium text-fog"
-              >
-                <span className="text-green">
-                  <Check />
-                </span>
-                {c}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </div>
-  );
 }

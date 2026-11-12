@@ -11,7 +11,7 @@ export default function Showcase({ project }: { project: Project }) {
   const domain = project.product.domain;
 
   return (
-    <section id="showcase" className="relative overflow-hidden pb-28 md:pb-44">
+    <section id="showcase" className="relative overflow-hidden pb-28 pt-24 md:pb-44 md:pt-36">
       <div className="container-x">
         <Reveal>
           <h2 className="font-display text-[clamp(32px,4.4vw,64px)] font-semibold leading-[1] tracking-[-0.045em]">

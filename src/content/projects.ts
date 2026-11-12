@@ -20,7 +20,9 @@ export type Project = {
    * placed in /public/media). Until it's set, the section shows the product's opening screen.
    */
   video?: string;
-  /** The "Inside the product" boxes, in grid order, with the text of their detail view. */
+  /** Section headings, each as [first words, muted rest]. */
+  headings: { inside: [string, string]; more: [string, string] };
+  /** "Inside the product": the features shown one after another, each with its visual. */
   inside: InsideItem[];
   /** "More projects" boxes at the bottom of the page, in display order (a joined 2-column grid). */
   next: ProjectCard[];
@@ -87,6 +89,10 @@ export const projects: Project[] = [
       "The Tensions",
       "The Verdict",
     ],
+    headings: {
+      inside: ["Inside", "the product."],
+      more: ["More", "projects."],
+    },
     inside: [
       {
         id: "timeline",

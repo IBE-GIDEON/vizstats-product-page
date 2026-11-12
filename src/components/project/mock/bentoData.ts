@@ -1,7 +1,4 @@
-// Shared data and styles for the "Inside the product" bento and its detail modal.
-
-export const card =
-  "rounded-2xl border border-white/[0.07] bg-gradient-to-b from-[#151717] to-[#0a0b0b] shadow-[0_40px_80px_-30px_rgba(0,0,0,0.95)]";
+// Shared data for the "Inside the product" feature visuals.
 
 /** [atomic number, symbol, column, row] for periods 1–4 */
 export const ELEMENTS: [number, string, number, number][] = [
