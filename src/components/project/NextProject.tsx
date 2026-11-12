@@ -34,7 +34,7 @@ function Box({ card }: { card: ProjectCard }) {
             {card.titleLines[0]} <span className="text-ash-2">{card.titleLines[1]}</span>
           </h3>
         </div>
-        <p className="hidden shrink-0 pb-1 text-right text-[13px] text-ash-3 sm:block">{card.meta}</p>
+        <p className="hidden shrink-0 pb-1 text-right text-[14px] text-ash-3 sm:block">{card.meta}</p>
       </div>
     </a>
   );

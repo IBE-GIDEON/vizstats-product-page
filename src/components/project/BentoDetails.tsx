@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { IconLock } from "@/components/site/icons";
-import type { InsideItem, Project } from "@/content/projects";
+import type { BuiltinVisual, FeaturePanel, Project } from "@/content/projects";
 import { ProductPoster } from "./HeroMedia";
 import {
   CHAIN,
@@ -15,13 +15,13 @@ import {
   smoothPath,
 } from "./mock/bentoData";
 import { IPadPro, IPhone17, MacBookPro, NativeScreen } from "./mock/Devices";
+import { ERAS, Machine } from "./mock/Machines";
 import { ProductScreen } from "./mock/ProductScreen";
 
 /**
- * The expanded view behind each "Inside the product" box: a large live piece of the product
- * (animation, image or interactive), a short description and a few facts.
+ * The built-in visuals for "Inside the product": large live pieces of the product (animation or
+ * interactive), and single pieces sized for boxes (one era, one device).
  */
-export type BentoDetail = InsideItem & { media: React.ReactNode };
 
 /* ── media blocks ─────────────────────────────────────────────────── */
 
@@ -337,36 +337,90 @@ function ResponsiveDetail({ project }: { project: Project }) {
   );
 }
 
-/* ── content ──────────────────────────────────────────────────────── */
+/* ── single pieces, made for boxes ─────────────────────────────────── */
 
-/** The visual under a feature: a built-in product piece, the editor's image or video, or nothing. */
-function mediaFor(item: InsideItem, project: Project): React.ReactNode {
-  switch (item.visual) {
+const ERA_OF: Partial<Record<BuiltinVisual, (typeof ERAS)[number]["key"]>> = {
+  "era-ancient": "ancient",
+  "era-industrial": "industrial",
+  "era-combustion": "combustion",
+  "era-electric": "electric",
+};
+
+/** One machine from the timeline, with its year and name, as in the product. */
+function EraBox({ era }: { era: (typeof ERAS)[number]["key"] }) {
+  const e = ERAS.find((x) => x.key === era) ?? ERAS[0];
+  return (
+    <div className="relative flex flex-col items-center px-6 pb-8 pt-8 text-center">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-3/4 bg-[radial-gradient(50%_55%_at_50%_70%,rgba(224,53,60,0.22),transparent)]" />
+      <Machine era={e.key} className="relative w-[64%] drop-shadow-[0_20px_30px_rgba(0,0,0,0.8)]" />
+      <p className="relative mt-7 font-display text-[46px] font-bold leading-none tabular-nums tracking-[-0.03em] text-signal">{e.year}</p>
+      <p className="relative mt-2 text-[17px] text-white/70">{e.name}</p>
+    </div>
+  );
+}
+
+/** One device running the product. */
+function DeviceBox({ kind, project }: { kind: "device-laptop" | "device-tablet" | "device-phone"; project: Project }) {
+  const { chapters } = project;
+  const domain = project.product.domain;
+  if (kind === "device-laptop") {
+    return (
+      <div className="px-8 py-10">
+        <MacBookPro domain={domain}>
+          <ProductScreen chapters={chapters} variant="tablet" initial={2} />
+        </MacBookPro>
+      </div>
+    );
+  }
+  if (kind === "device-tablet") {
+    return (
+      <div className="mx-auto w-[82%] py-8">
+        <IPadPro domain={domain} orientation="portrait">
+          <ProductScreen chapters={chapters} variant="tablet" initial={1} />
+        </IPadPro>
+      </div>
+    );
+  }
+  return (
+    <div className="mx-auto w-[62%] py-8">
+      <IPhone17 domain={domain}>
+        <ProductScreen chapters={chapters} variant="phone" initial={3} />
+      </IPhone17>
+    </div>
+  );
+}
+
+/* ── which built-in visual a box shows ───────────────────────────────── */
+
+/**
+ * The built-in visual for a box, and the width it's laid out at before being scaled into a box.
+ * Images and videos are drawn by the section itself (they fill boxes differently), so they return null.
+ */
+export function builtinVisual(panel: FeaturePanel, project: Project): { node: React.ReactNode; design: number } | null {
+  const era = ERA_OF[panel.visual as BuiltinVisual];
+  if (era) return { node: <EraBox era={era} />, design: 360 };
+  switch (panel.visual) {
     case "timeline":
-      return <LiveScreens project={project} />;
+      return { node: <LiveScreens project={project} />, design: 980 };
     case "periodic":
-      return <PeriodicDetail />;
+      return { node: <PeriodicDetail />, design: 900 };
     case "registry":
-      return <RegistryDetail />;
+      return { node: <RegistryDetail />, design: 900 };
     case "sites":
-      return <SitesDetail value={project.stats[1]?.value ?? 0} />;
+      return { node: <SitesDetail value={project.stats[1]?.value ?? 0} />, design: 900 };
     case "live":
-      return <LiveDetail project={project} />;
+      return { node: <LiveDetail project={project} />, design: 900 };
     case "chain":
-      return <ChainDetail stats={project.stats} />;
+      return { node: <ChainDetail stats={project.stats} />, design: 980 };
     case "responsive":
-      return <ResponsiveDetail project={project} />;
-    case "image":
-      // any shape: shown in full at the column width
-      // eslint-disable-next-line @next/next/no-img-element
-      return item.src ? <img src={item.src} alt={item.alt} loading="lazy" className="block h-auto w-full" /> : null;
-    case "video":
-      return item.src ? <video src={item.src} autoPlay muted loop playsInline className="block h-auto w-full" /> : null;
+      return { node: <ResponsiveDetail project={project} />, design: 980 };
+    case "device-laptop":
+      return { node: <DeviceBox kind="device-laptop" project={project} />, design: 900 };
+    case "device-tablet":
+      return { node: <DeviceBox kind="device-tablet" project={project} />, design: 520 };
+    case "device-phone":
+      return { node: <DeviceBox kind="device-phone" project={project} />, design: 360 };
     default:
       return null;
   }
-}
-
-export function bentoDetails(project: Project): BentoDetail[] {
-  return project.inside.map((item) => ({ ...item, media: mediaFor(item, project) }));
 }

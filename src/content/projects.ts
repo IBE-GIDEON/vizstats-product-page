@@ -59,24 +59,53 @@ export type HeroImage = {
 };
 
 /** The product visuals built into the site (live, interactive pieces of the product). */
-export type BuiltinVisual = "timeline" | "periodic" | "registry" | "sites" | "live" | "chain" | "responsive";
+export type BuiltinVisual =
+  | "timeline"
+  | "periodic"
+  | "registry"
+  | "sites"
+  | "live"
+  | "chain"
+  | "responsive"
+  // single pieces, made for boxes
+  | "era-ancient"
+  | "era-industrial"
+  | "era-combustion"
+  | "era-electric"
+  | "device-laptop"
+  | "device-tablet"
+  | "device-phone";
 
-/** One feature in "Inside the product". Add as many as you like in the CMS. */
-export type InsideItem = {
-  /** unique per feature */
-  id: string;
-  label: string;
-  /** what shows under the text: a built-in product visual, an image, a video, or nothing (text only) */
-  visual: BuiltinVisual | "image" | "video" | "none";
+/** One box in a feature: a built-in product visual, or your own image or video. */
+export type FeaturePanel = {
+  visual: BuiltinVisual | "image" | "video";
   /** the image or video (a link, or an image uploaded in the CMS) when `visual` is image / video */
   src: string;
   /** what the image shows, for screen readers */
   alt: string;
-  /** one short sentence (or two) under the visual */
+  /** a short line under the box (optional) */
+  caption: string;
+};
+
+/**
+ * How a feature's boxes are arranged: one big box under the text ("full"), beside the text
+ * ("split"), or 2, 3 or 4 boxes side by side under the text.
+ */
+export type FeatureLayout = "full" | "split" | "half" | "third" | "quarter";
+
+/** One feature in "Inside the product": its own text and its own boxes. Add as many as you like in the CMS. */
+export type InsideItem = {
+  /** unique per feature */
+  id: string;
+  label: string;
+  layout: FeatureLayout;
+  /** the feature's visuals; leave empty for a text-only feature */
+  panels: FeaturePanel[];
+  /** one short description (or two) */
   body: string[];
   /** label / value rows beside the text */
   facts?: [string, string][];
-  /** short tags instead of facts, e.g. the screens a view works on */
+  /** short tags, e.g. the screens a view works on */
   chips?: string[];
   cta?: { href: string; label: string };
 };
@@ -168,10 +197,14 @@ export const projects: Project[] = [
     inside: [
       {
         id: "timeline",
-        visual: "timeline",
-        src: "",
-        alt: "",
         label: "Kinetic timeline",
+        layout: "quarter",
+        panels: [
+          { visual: "era-ancient", src: "", alt: "", caption: "" },
+          { visual: "era-industrial", src: "", alt: "", caption: "" },
+          { visual: "era-combustion", src: "", alt: "", caption: "" },
+          { visual: "era-electric", src: "", alt: "", caption: "" },
+        ],
         body: ["Four machines, from Hero's aeolipile to the induction motor, show how energy systems evolved. Tap an era to jump."],
         facts: [
           ["Chapter", "Energy Transition"],
@@ -181,10 +214,11 @@ export const projects: Project[] = [
       },
       {
         id: "periodic",
-        visual: "periodic",
-        src: "",
-        alt: "",
         label: "Periodic table",
+        layout: "split",
+        panels: [
+          { visual: "periodic", src: "", alt: "", caption: "" },
+        ],
         body: ["The minerals the energy transition depends on, picked out on the periodic table. Tap one to see what it's used for."],
         facts: [
           ["Key minerals", "8"],
@@ -193,10 +227,11 @@ export const projects: Project[] = [
       },
       {
         id: "registry",
-        visual: "registry",
-        src: "",
-        alt: "",
         label: "Company registry",
+        layout: "full",
+        panels: [
+          { visual: "registry", src: "", alt: "", caption: "" },
+        ],
         body: ["The 29 companies behind the projects, tagged state-backed or hybrid and filterable in one tap."],
         facts: [
           ["Companies", "29"],
@@ -206,10 +241,11 @@ export const projects: Project[] = [
       },
       {
         id: "sites",
-        visual: "sites",
-        src: "",
-        alt: "",
         label: "Project sites",
+        layout: "split",
+        panels: [
+          { visual: "sites", src: "", alt: "", caption: "" },
+        ],
         body: ["38 mining projects across five countries, each linked to its operator and mineral."],
         facts: [
           ["Projects", "38"],
@@ -219,10 +255,12 @@ export const projects: Project[] = [
       },
       {
         id: "live",
-        visual: "live",
-        src: "",
-        alt: "",
         label: "Live product",
+        layout: "half",
+        panels: [
+          { visual: "live", src: "", alt: "", caption: "Desktop" },
+          { visual: "device-phone", src: "", alt: "", caption: "Phone" },
+        ],
         body: ["The full story is live: nine chapters, built for any screen."],
         facts: [
           ["Address", "miningafrica.chinaglobalsouth.com"],
@@ -233,10 +271,11 @@ export const projects: Project[] = [
       },
       {
         id: "chain",
-        visual: "chain",
-        src: "",
-        alt: "",
         label: "Command chain",
+        layout: "full",
+        panels: [
+          { visual: "chain", src: "", alt: "", caption: "" },
+        ],
         body: ["Who really controls a mine, traced from the site through the operator and parent group to the state and Beijing."],
         facts: [
           ["From", "Mine site"],
@@ -246,12 +285,14 @@ export const projects: Project[] = [
       },
       {
         id: "responsive",
-        visual: "responsive",
-        src: "",
-        alt: "",
         label: "Responsive",
+        layout: "third",
+        panels: [
+          { visual: "device-laptop", src: "", alt: "", caption: "Desktop" },
+          { visual: "device-tablet", src: "", alt: "", caption: "Tablet" },
+          { visual: "device-phone", src: "", alt: "", caption: "Phone" },
+        ],
         body: ["One story, re-laid out for every screen."],
-        chips: ["Desktop", "Tablet", "Phone"],
       },
     ],
     next: [

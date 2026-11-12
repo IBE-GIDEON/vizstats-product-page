@@ -74,8 +74,8 @@ function FitNote({ src, spec }: { src: string; spec?: Spec }) {
   const shape = matches
     ? `Matches ${spec.label}: it fits the screen with almost no cropping.`
     : diff < 1
-      ? `Taller than ${spec.label}: some of the top and bottom will be cropped. Use the focus point to choose what stays.`
-      : `Wider than ${spec.label}: some of the sides will be cropped. Use the focus point to choose what stays.`;
+      ? `Taller than ${spec.label}: some of the top and bottom will be cropped.`
+      : `Wider than ${spec.label}: some of the sides will be cropped.`;
   const small = size.w < spec.w * 0.75 && size.h < spec.h * 0.75;
 
   return (

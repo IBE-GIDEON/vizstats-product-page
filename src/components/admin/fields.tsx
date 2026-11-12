@@ -59,22 +59,42 @@ const LABELS: Record<string, string> = {
   tabletImage: "iPad screen",
   phoneImage: "iPhone screen",
   imageAlt: "Describe the image (for screen readers)",
+  panels: "Boxes",
+  caption: "Caption (optional)",
 };
 
-/** The built-in product visuals a feature can show. */
+/** The built-in product visuals a box can show. */
 const BUILTIN: Record<string, string> = {
-  timeline: "Kinetic timeline (live)",
+  timeline: "Kinetic timeline (live, desktop)",
   periodic: "Periodic table (interactive)",
   registry: "Company registry (interactive)",
   sites: "Project sites",
   live: "Product opening screen",
   chain: "Command chain",
-  responsive: "Laptop, tablet and phone",
+  responsive: "Laptop, tablet and phone together",
+};
+/** Single pieces, made for boxes side by side. */
+const PIECES: Record<string, string> = {
+  "era-ancient": "Era: 50 AD, Hero's Aeolipile",
+  "era-industrial": "Era: 1769, Watt Steam Engine",
+  "era-combustion": "Era: 1876, Otto Four-Stroke Engine",
+  "era-electric": "Era: 1888, Induction Motor",
+  "device-laptop": "Product on a laptop",
+  "device-tablet": "Product on a tablet",
+  "device-phone": "Product on a phone",
+};
+
+/** The shape boxes are cropped to in each side-by-side layout (images fill the box). */
+const BOX_SPEC: Record<string, { ratio: number; label: string; w: number; h: number }> = {
+  half: { ratio: 16 / 11, label: "16:11", w: 2200, h: 1512 },
+  third: { ratio: 4 / 5, label: "4:5", w: 1600, h: 2000 },
+  quarter: { ratio: 3 / 4, label: "3:4", w: 1500, h: 2000 },
 };
 
 /** What the "Add" button says under each list. */
 const ADD_LABELS: Record<string, string> = {
   meta: "Add fact card",
+  panels: "Add box",
   inside: "Add feature",
   nav: "Add link",
   chapters: "Add chapter",
@@ -156,15 +176,20 @@ function blank(v: unknown, key?: string): unknown {
   if (typeof v === "string") {
     if (key === "id") return `item-${Date.now().toString(36)}`;
     if (key === "visual") return "image";
+    if (key === "layout") return v;
     if (key === "shot" || key === "icon") return v;
     return key === "href" ? "#" : "";
   }
   if (typeof v === "number") return 0;
   if (typeof v === "boolean") return v;
-  if (Array.isArray(v)) return v.every((x) => typeof x === "string") && v.length !== 2 ? [] : v.map((x) => blank(x));
+  if (Array.isArray(v)) {
+    if (key === "panels") return v.length ? [blank(v[0])] : [];
+    return v.every((x) => typeof x === "string") && v.length !== 2 ? [] : v.map((x) => blank(x));
+  }
   if (isObject(v)) {
     const out: Record<string, unknown> = {};
     for (const [k, x] of Object.entries(v)) out[k] = k === "slug" ? `${String(x)}-${Date.now().toString(36)}` : blank(x, k);
+    if ("visual" in out) out.visual = "image";
     return out;
   }
   return v;
@@ -174,6 +199,12 @@ function itemTitle(v: unknown, i: number): string {
   if (typeof v === "string") return v || `Item ${i + 1}`;
   if (Array.isArray(v)) return v.filter((x) => typeof x === "string" && x).join(" — ") || `Item ${i + 1}`;
   if (isObject(v)) {
+    // a feature's box: "Box 2 · Tablet"
+    if (typeof v.visual === "string" && "caption" in v) {
+      const what =
+        v.visual === "image" ? "Image" : v.visual === "video" ? "Video" : (PIECES[v.visual] ?? BUILTIN[v.visual] ?? "Box");
+      return `Box ${i + 1} · ${typeof v.caption === "string" && v.caption ? v.caption : what}`;
+    }
     if (typeof v.label === "string" && v.label) return v.label;
     if (Array.isArray(v.titleLines)) return v.titleLines.join(" ");
     if (typeof v.value === "string" && v.value) return v.value;
@@ -200,6 +231,7 @@ export function Field({
   listKey,
   siblings,
   bare,
+  featureLayout: inheritedLayout,
 }: {
   name: string | number;
   value: unknown;
@@ -212,7 +244,12 @@ export function Field({
   siblings?: Record<string, unknown>;
   /** render without its own label (inside list items) */
   bare?: boolean;
+  /** the layout of the feature these fields belong to */
+  featureLayout?: string;
 }) {
+  // a feature's boxes inherit its layout
+  const featureLayout = name === "panels" && typeof siblings?.layout === "string" ? siblings.layout : inheritedLayout;
+
   // intro statement: click words to highlight them
   if (name === "ledeAccents" && Array.isArray(value) && typeof siblings?.lede === "string") {
     return (
@@ -220,6 +257,17 @@ export function Field({
         <p className="mb-1 text-[13px] font-medium text-ash-3">{labelFor(name)}</p>
         <p className="mb-3 text-[12.5px] text-ash-2">Click a word to show it in the accent colour; click it again to turn it off.</p>
         <AccentPicker text={siblings.lede} value={value as string[]} onChange={(v) => onEdit(path, v)} />
+      </div>
+    );
+  }
+
+  // features: how each one is laid out
+  if (name === "layout" && typeof value === "string") {
+    return (
+      <div>
+        <p className="mb-1 text-[13px] font-medium text-ash-3">Layout</p>
+        <p className="mb-3 text-[12.5px] text-ash-2">How this feature&rsquo;s boxes sit: one big under the text, beside the text, or 2, 3 or 4 side by side under one description.</p>
+        <LayoutPicker value={value} onChange={(v) => onEdit(path, v)} />
       </div>
     );
   }
@@ -233,10 +281,16 @@ export function Field({
           <optgroup label="Your media">
             <option value="image">Image</option>
             <option value="video">Video</option>
-            <option value="none">Text only</option>
           </optgroup>
           <optgroup label="Built-in product visuals">
             {Object.entries(BUILTIN).map(([k, l]) => (
+              <option key={k} value={k}>
+                {l}
+              </option>
+            ))}
+          </optgroup>
+          <optgroup label="Single pieces (for boxes side by side)">
+            {Object.entries(PIECES).map(([k, l]) => (
               <option key={k} value={k}>
                 {l}
               </option>
@@ -250,7 +304,19 @@ export function Field({
     const kind = siblings.visual;
     if (name === "alt") return kind === "image" ? <Field name="imageAlt" value={value} path={path} onEdit={onEdit} /> : null;
     if (kind === "image")
-      return <ImagePicker title="Image" hint="Any shape — shown in full at the width of the page." src={String(value)} onSrc={(v) => onEdit(path, v)} />;
+      return (
+        <ImagePicker
+          title="Image"
+          hint={
+            featureLayout && BOX_SPEC[featureLayout]
+              ? `Boxes side by side are cropped to fill. Best ${BOX_SPEC[featureLayout].label}, ${BOX_SPEC[featureLayout].w} × ${BOX_SPEC[featureLayout].h} px.`
+              : "Any shape — shown in full."
+          }
+          spec={featureLayout ? BOX_SPEC[featureLayout] : undefined}
+          src={String(value)}
+          onSrc={(v) => onEdit(path, v)}
+        />
+      );
     if (kind === "video") return <VideoField title="Video" src={String(value)} onSrc={(v) => onEdit(path, v)} />;
     return null;
   }
@@ -373,12 +439,22 @@ export function Field({
       </div>
     );
   } else if (Array.isArray(value)) {
-    control = <List name={name} items={value} path={path} onEdit={onEdit} />;
+    control = <List name={name} items={value} path={path} onEdit={onEdit} featureLayout={featureLayout} />;
   } else if (isObject(value)) {
     control = (
       <div className="space-y-5 rounded-[10px] border border-paper-line bg-white/60 p-4 sm:p-5">
         {Object.entries(value).map(([k, v]) => (
-          <Field key={k} name={k} value={v} path={[...path, k]} onEdit={onEdit} parent={name} listKey={listKey} siblings={value} />
+          <Field
+            key={k}
+            name={k}
+            value={v}
+            path={[...path, k]}
+            onEdit={onEdit}
+            parent={name}
+            listKey={listKey}
+            siblings={value}
+            featureLayout={featureLayout}
+          />
         ))}
       </div>
     );
@@ -397,7 +473,19 @@ export function Field({
   );
 }
 
-function List({ name, items, path, onEdit }: { name: string | number; items: unknown[]; path: Path; onEdit: Edit }) {
+function List({
+  name,
+  items,
+  path,
+  onEdit,
+  featureLayout,
+}: {
+  name: string | number;
+  items: unknown[];
+  path: Path;
+  onEdit: Edit;
+  featureLayout?: string;
+}) {
   const fixed = typeof name === "string" && FIXED.has(name);
   const simple = items.length === 0 || items.every((x) => typeof x === "string");
 
@@ -432,7 +520,7 @@ function List({ name, items, path, onEdit }: { name: string | number; items: unk
         simple ? (
           <div key={i} className="flex items-start gap-2">
             <div className="min-w-0 flex-1">
-              <Field name={i} value={item} path={[...path, i]} onEdit={onEdit} parent={name} listKey={name} bare />
+              <Field name={i} value={item} path={[...path, i]} onEdit={onEdit} parent={name} listKey={name} featureLayout={featureLayout} bare />
             </div>
             <div className="pt-1.5">{controls(i)}</div>
           </div>
@@ -446,7 +534,7 @@ function List({ name, items, path, onEdit }: { name: string | number; items: unk
               <span onClick={(e) => e.preventDefault()}>{controls(i)}</span>
             </summary>
             <div className="border-t border-paper-line p-4 sm:p-5">
-              <Field name={i} value={item} path={[...path, i]} onEdit={onEdit} parent={name} listKey={name} bare />
+              <Field name={i} value={item} path={[...path, i]} onEdit={onEdit} parent={name} listKey={name} featureLayout={featureLayout} bare />
             </div>
           </details>
         ),
@@ -509,6 +597,48 @@ function AccentPicker({ text, value, onChange }: { text: string; value: string[]
             className={`mr-[0.25em] rounded-[4px] px-[0.08em] transition-colors hover:bg-white/10 ${on ? "text-green" : ""}`}
           >
             {w}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+const LAYOUTS: { id: string; label: string; cells: number[] }[] = [
+  { id: "full", label: "One big", cells: [12] },
+  { id: "split", label: "Beside the text", cells: [7, 5] },
+  { id: "half", label: "2 side by side", cells: [6, 6] },
+  { id: "third", label: "3 side by side", cells: [4, 4, 4] },
+  { id: "quarter", label: "4 side by side", cells: [3, 3, 3, 3] },
+];
+
+/** Little diagrams of each layout; the chosen one is outlined. */
+function LayoutPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div role="radiogroup" aria-label="Layout" className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+      {LAYOUTS.map((l) => {
+        const on = l.id === value;
+        return (
+          <button
+            key={l.id}
+            type="button"
+            role="radio"
+            aria-checked={on}
+            onClick={() => onChange(l.id)}
+            className={`rounded-[8px] border p-2.5 text-left transition-colors ${
+              on ? "border-green-2 bg-green/10 ring-[3px] ring-green/15" : "border-paper-line bg-white hover:border-black/25"
+            }`}
+          >
+            <span className="grid h-9 grid-cols-12 gap-1">
+              {l.cells.map((c, i) => (
+                <span
+                  key={i}
+                  style={{ gridColumn: `span ${c} / span ${c}` }}
+                  className={`rounded-[3px] ${on ? "bg-green-2/60" : "bg-black/15"} ${l.id === "split" && i === 1 ? "!bg-black/[0.06]" : ""}`}
+                />
+              ))}
+            </span>
+            <span className={`mt-2 block text-[12.5px] font-medium ${on ? "text-ink-1" : "text-ash-3"}`}>{l.label}</span>
           </button>
         );
       })}
