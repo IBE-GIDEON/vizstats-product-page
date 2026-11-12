@@ -52,7 +52,7 @@ export default function Footer({ site }: { site: SiteContent }) {
         <div className="container-x relative">
           <span
             aria-hidden
-            className="block -skew-x-[11deg] select-none whitespace-nowrap bg-gradient-to-b from-white/[0.2] via-white/[0.06] to-transparent bg-clip-text pb-2 font-logo text-[clamp(44px,16vw,270px)] leading-[0.9] tracking-[0.005em] text-transparent"
+            className="pointer-events-none block -skew-x-[11deg] select-none whitespace-nowrap bg-gradient-to-b from-white/[0.2] via-white/[0.06] to-transparent bg-clip-text pb-2 font-logo text-[clamp(44px,16vw,270px)] leading-[0.9] tracking-[0.005em] text-transparent"
           >
             {site.name}
           </span>

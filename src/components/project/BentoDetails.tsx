@@ -70,8 +70,8 @@ function PeriodicDetail() {
 
   return (
     <div>
-      {/* the table scrolls sideways on narrow screens */}
-      <div data-lenis-prevent className="-mx-1 overflow-x-auto px-1 pb-2 [scrollbar-width:thin]">
+      {/* the table scrolls sideways on narrow screens (no data-lenis-prevent here: Lenis would make the mouse wheel dead over it) */}
+      <div className="-mx-1 overflow-x-auto px-1 pb-2 [scrollbar-width:thin]">
         <div className="grid min-w-[620px] grid-cols-[repeat(18,minmax(0,1fr))] gap-1">
           {ELEMENTS.map(([num, sym, col, row]) => {
             const key = KEY.has(sym);
@@ -251,7 +251,7 @@ function ChainDetail({ stats }: { stats: Project["stats"] }) {
           </div>
         ))}
       </div>
-      <div data-lenis-prevent className="overflow-x-auto [scrollbar-width:thin]">
+      <div className="overflow-x-auto [scrollbar-width:thin]">
         <svg viewBox="0 0 700 250" className="block w-full min-w-[560px]" aria-hidden>
           <defs>
             <linearGradient id="chain-detail-g" x1="0" x2="1">
