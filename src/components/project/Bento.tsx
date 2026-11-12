@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import { IconLock, IconPlus } from "@/components/site/icons";
 import Modal from "@/components/ui/Modal";
 import { Reveal } from "@/components/ui/motion";
-import type { Project } from "@/content/projects";
+import type { InsideItem, Project } from "@/content/projects";
 import { BentoDetailBody, bentoDetails } from "./BentoDetails";
 import { CHAIN, ELEMENTS, KEY, REGISTRY, SECONDARY, card, smoothPath } from "./mock/bentoData";
 import { IPhone17 } from "./mock/Devices";
@@ -305,17 +305,18 @@ export default function Bento({ project }: { project: Project }) {
   const prev = useCallback(() => setView((v) => ({ ...v, index: (v.index - 1 + n) % n })), [n]);
   const next = useCallback(() => setView((v) => ({ ...v, index: (v.index + 1) % n })), [n]);
 
-  // one entry per cell, in grid order — must match `bentoDetails`
-  const cells: { className?: string; mock: React.ReactNode }[] = [
-    { mock: <TimelineMock /> },
-    { className: "lg:col-span-2", mock: <PeriodicMock /> },
-    { className: "min-h-[460px] lg:row-span-2", mock: <RegistryMock /> },
-    { mock: <StatMock value={project.stats[1]?.value ?? 0} word="projects" /> },
-    { mock: <BrowserMock domain={project.product.domain} /> },
-    { className: "min-h-[420px] sm:col-span-2 lg:row-span-2", mock: <ChainMock stats={project.stats} /> },
-    { className: "min-h-[420px]", mock: <PhoneMock chapters={project.chapters} domain={project.product.domain} /> },
-  ];
+  // each box's preview and grid size, by id; order and labels come from the project content
+  const cells: Record<InsideItem["id"], { className?: string; mock: React.ReactNode }> = {
+    timeline: { mock: <TimelineMock /> },
+    periodic: { className: "lg:col-span-2", mock: <PeriodicMock /> },
+    registry: { className: "min-h-[460px] lg:row-span-2", mock: <RegistryMock /> },
+    sites: { mock: <StatMock value={project.stats[1]?.value ?? 0} word="projects" /> },
+    live: { mock: <BrowserMock domain={project.product.domain} /> },
+    chain: { className: "min-h-[420px] sm:col-span-2 lg:row-span-2", mock: <ChainMock stats={project.stats} /> },
+    responsive: { className: "min-h-[420px]", mock: <PhoneMock chapters={project.chapters} domain={project.product.domain} /> },
+  };
   const item = details[index];
+  if (!item) return null;
 
   return (
     <section id="inside" className="relative pb-28 md:pb-40">
@@ -329,9 +330,9 @@ export default function Bento({ project }: { project: Project }) {
         {/* phones: one column · tablets: two (dense, so no holes) · 1024px and up: three */}
         <Reveal y={40}>
           <div className="grid grid-cols-1 border-l border-t border-line sm:grid-flow-row-dense sm:grid-cols-2 lg:grid-flow-row lg:auto-rows-[248px] lg:grid-cols-3">
-            {cells.map((c, i) => (
-              <Cell key={details[i].id} label={details[i].label} className={c.className} onOpen={() => show(i)}>
-                {c.mock}
+            {details.map((d, i) => (
+              <Cell key={d.id} label={d.label} className={cells[d.id].className} onOpen={() => show(i)}>
+                {cells[d.id].mock}
               </Cell>
             ))}
           </div>

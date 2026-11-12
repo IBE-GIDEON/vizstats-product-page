@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { IconArrowUpRight, IconLock } from "@/components/site/icons";
-import type { Project } from "@/content/projects";
+import type { InsideItem, Project } from "@/content/projects";
 import { ProductPoster } from "./HeroMedia";
 import {
   CHAIN,
@@ -14,21 +14,14 @@ import {
   SECONDARY,
   smoothPath,
 } from "./mock/bentoData";
-import { IPadPro, IPhone17, NativeScreen } from "./mock/Devices";
+import { IPadPro, IPhone17, MacBookPro, NativeScreen } from "./mock/Devices";
 import { ProductScreen } from "./mock/ProductScreen";
 
 /**
  * The expanded view behind each "Inside the product" box: a large live piece of the product
  * (animation, image or interactive), a short description and a few facts.
  */
-export type BentoDetail = {
-  id: string;
-  label: string;
-  media: React.ReactNode;
-  body: string[];
-  facts: [string, string][];
-  cta?: { href: string; label: string };
-};
+export type BentoDetail = InsideItem & { media: React.ReactNode };
 
 /* ── media blocks ─────────────────────────────────────────────────── */
 
@@ -310,20 +303,35 @@ function ChainDetail({ stats }: { stats: Project["stats"] }) {
   );
 }
 
+/** One story on every screen: laptop at the back, iPad and iPhone in front, all running the product. */
 function ResponsiveDetail({ project }: { project: Project }) {
   const domain = project.product.domain;
+  const { chapters } = project;
   return (
-    <div className="relative px-1 pb-10 pt-2 md:px-6 md:pb-14 md:pt-4">
-      <div className="pointer-events-none absolute inset-x-[10%] bottom-0 top-1/3 bg-[radial-gradient(50%_50%_at_50%_60%,rgba(224,53,60,0.12),transparent)] blur-2xl" />
-      <div className="relative mr-[14%] md:mr-[12%]">
-        <IPadPro domain={domain}>
-          <ProductScreen chapters={project.chapters} variant="tablet" initial={3} />
-        </IPadPro>
-      </div>
-      <div className="absolute bottom-0 right-1 z-10 w-[30%] max-w-[230px] md:right-6 md:w-[21%]">
-        <IPhone17 domain={domain}>
-          <ProductScreen chapters={project.chapters} variant="phone" initial={1} />
-        </IPhone17>
+    <div className="relative overflow-hidden rounded-xl bg-[radial-gradient(75%_65%_at_50%_0%,rgba(255,255,255,0.07),transparent_70%)] px-[3%] pt-[3%]">
+      {/* the surface they stand on */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[22%] bg-gradient-to-t from-white/[0.035] to-transparent" />
+      <div className="pointer-events-none absolute inset-x-[10%] bottom-[2%] h-[10%] rounded-[50%] bg-black blur-2xl" />
+
+      <div className="relative mx-auto aspect-[16/8] w-full max-w-[940px]">
+        {/* desktop, at the back */}
+        <div className="absolute bottom-[5%] left-1/2 w-[62%] -translate-x-1/2">
+          <MacBookPro domain={domain}>
+            <ProductScreen chapters={chapters} variant="tablet" initial={2} />
+          </MacBookPro>
+        </div>
+        {/* tablet, front left */}
+        <div className="absolute bottom-[1%] left-[5%] z-10 w-[25%] sm:w-[22%]">
+          <IPadPro domain={domain} orientation="portrait">
+            <ProductScreen chapters={chapters} variant="tablet" initial={1} />
+          </IPadPro>
+        </div>
+        {/* phone, front right */}
+        <div className="absolute bottom-[1%] right-[9%] z-10 w-[12.5%] sm:w-[10.5%]">
+          <IPhone17 domain={domain}>
+            <ProductScreen chapters={chapters} variant="phone" initial={3} />
+          </IPhone17>
+        </div>
       </div>
     </div>
   );
@@ -331,107 +339,36 @@ function ResponsiveDetail({ project }: { project: Project }) {
 
 /* ── content ──────────────────────────────────────────────────────── */
 
+/** The visual for each box, by id. All the words come from the project content. */
+function mediaFor(id: InsideItem["id"], project: Project): React.ReactNode {
+  switch (id) {
+    case "timeline":
+      return <LiveScreens project={project} />;
+    case "periodic":
+      return <PeriodicDetail />;
+    case "registry":
+      return <RegistryDetail />;
+    case "sites":
+      return <SitesDetail value={project.stats[1]?.value ?? 0} />;
+    case "live":
+      return <LiveDetail project={project} />;
+    case "chain":
+      return <ChainDetail stats={project.stats} />;
+    case "responsive":
+      return <ResponsiveDetail project={project} />;
+  }
+}
+
 export function bentoDetails(project: Project): BentoDetail[] {
-  const [companies, sites, countries] = project.stats.map((s) => s.value);
-  return [
-    {
-      id: "timeline",
-      label: "Kinetic timeline",
-      media: <LiveScreens project={project} />,
-      body: [
-        "The story opens on a kinetic timeline: four machines — from Hero's aeolipile to the induction motor — play in sequence to show how energy systems evolved before the minerals story begins.",
-        "Each era can be picked from the axis at the bottom; the stage animates the machine in and out and the copy changes with it.",
-      ],
-      facts: [
-        ["Chapter", "Energy Transition"],
-        ["Eras", "4"],
-        ["Span", "50 AD – 1888"],
-        ["Interaction", "Auto-play, tap to jump"],
-      ],
-    },
-    {
-      id: "periodic",
-      label: "Periodic table",
-      media: <PeriodicDetail />,
-      body: [
-        "Transition minerals are picked out on the periodic table itself, so readers can see at a glance which elements the energy transition depends on.",
-        "Selecting an element shows what it is used for — from cobalt in battery cathodes to copper in grids and motors.",
-      ],
-      facts: [
-        ["Key minerals", String(KEY.size)],
-        ["Secondary", String(SECONDARY.size)],
-        ["Shown", "Periods 1–4"],
-      ],
-    },
-    {
-      id: "registry",
-      label: "Company registry",
-      media: <RegistryDetail />,
-      body: [
-        `A registry of the ${companies} companies behind the projects, each tagged by ownership — state-backed or hybrid — with the country and mineral it works in.`,
-        "Filters narrow the list in one tap, and every row links through to the company's profile in the product.",
-      ],
-      facts: [
-        ["Companies", String(companies)],
-        ["Ownership", "State-backed · Hybrid"],
-        ["Countries", String(countries)],
-      ],
-    },
-    {
-      id: "sites",
-      label: "Project sites",
-      media: <SitesDetail value={sites} />,
-      body: [
-        `${sites} mining projects across ${countries} countries, each linked to the company that runs it and the mineral it produces.`,
-      ],
-      facts: [
-        ["Projects", String(sites)],
-        ["Countries", String(countries)],
-        ["Minerals", [...new Set(REGISTRY.map((r) => r.m))].join(" · ")],
-      ],
-    },
-    {
-      id: "live",
-      label: "Live product",
-      media: <LiveDetail project={project} />,
-      body: [
-        "The full data story is live — nine chapters, from the energy transition to the verdict, built to read on any screen.",
-      ],
-      facts: [
-        ["Address", project.product.domain],
-        ["Chapters", String(project.chapters.length)],
-        ["Format", "Interactive data story"],
-      ],
-      cta: { href: project.product.url, label: "Open product" },
-    },
-    {
-      id: "chain",
-      label: "Command chain",
-      media: <ChainDetail stats={project.stats} />,
-      body: [
-        "The command chain traces who really controls a mine: from the site itself, through the operator and its parent group, to the state shareholder and, finally, Beijing.",
-        "Following one chain end to end turns a list of companies into a picture of state influence.",
-      ],
-      facts: [
-        ["Links", String(CHAIN.length)],
-        ["From", "Mine site"],
-        ["To", "Beijing"],
-      ],
-    },
-    {
-      id: "responsive",
-      label: "Responsive",
-      media: <ResponsiveDetail project={project} />,
-      body: [
-        "Every chapter is designed for phone, tablet and desktop — the same story re-laid out for each screen, not shrunk to fit.",
-      ],
-      facts: [
-        ["Phone", "Single column, swipeable tabs"],
-        ["Tablet", "Full stage, side machines"],
-        ["Desktop", "Full layout"],
-      ],
-    },
-  ];
+  return project.inside.map((item) => ({ ...item, media: mediaFor(item.id, project) }));
+}
+
+function Check() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M5 12.5l4.5 4.5L19 7.5" />
+    </svg>
+  );
 }
 
 export function BentoDetailBody({ item }: { item: BentoDetail }) {
@@ -441,8 +378,8 @@ export function BentoDetailBody({ item }: { item: BentoDetail }) {
         {item.media}
       </div>
 
-      <div className="mt-8 grid gap-8 md:mt-10 md:grid-cols-[1.5fr_1fr] md:gap-14">
-        <div className="space-y-4">
+      <div className="mt-8 flex flex-col gap-8 md:mt-10 md:flex-row md:items-start md:justify-between md:gap-14">
+        <div className="max-w-[620px] space-y-4">
           {item.body.map((p, i) => (
             <p key={i} className="text-[16px] leading-[1.6] text-ash md:text-[18px]">
               {p}
@@ -453,23 +390,44 @@ export function BentoDetailBody({ item }: { item: BentoDetail }) {
               href={item.cta.href}
               target="_blank"
               rel="noreferrer"
-              className="group mt-4 inline-flex items-center gap-3 rounded-full bg-green py-2 pl-6 pr-2 text-[15px] font-medium text-black transition-colors hover:bg-fog"
+              className="group mt-4 inline-flex items-center gap-3 rounded-full bg-[#e7f0f1] py-3 pl-5 pr-6 text-[15px] font-semibold text-[#151a1b] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.7),0_0_0_5px_rgba(231,240,241,0.07)] transition-colors duration-300 hover:bg-[#f1f7f8]"
             >
+              <IconArrowUpRight
+                width={17}
+                height={17}
+                className="text-green-2 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+              />
               {item.cta.label}
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-green transition-transform duration-500 group-hover:rotate-45">
-                <IconArrowUpRight />
-              </span>
             </a>
           )}
         </div>
-        <dl className="h-fit border-t border-white/[0.07]">
-          {item.facts.map(([k, v]) => (
-            <div key={k} className="flex items-baseline justify-between gap-6 border-b border-white/[0.07] py-3.5">
-              <dt className="shrink-0 text-[13px] text-ash-3">{k}</dt>
-              <dd className="min-w-0 break-words text-right text-[14px] font-medium text-fog">{v}</dd>
-            </div>
-          ))}
-        </dl>
+
+        {item.facts && item.facts.length > 0 && (
+          <dl className="h-fit w-full border-t border-white/[0.07] md:max-w-[400px]">
+            {item.facts.map(([k, v]) => (
+              <div key={k} className="flex items-baseline justify-between gap-6 border-b border-white/[0.07] py-3.5">
+                <dt className="shrink-0 text-[13px] text-ash-3">{k}</dt>
+                <dd className="min-w-0 break-words text-right text-[14px] font-medium text-fog">{v}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+
+        {item.chips && item.chips.length > 0 && (
+          <ul className="flex flex-wrap gap-2 md:justify-end">
+            {item.chips.map((c) => (
+              <li
+                key={c}
+                className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] py-2 pl-3 pr-4 text-[14px] font-medium text-fog"
+              >
+                <span className="text-green">
+                  <Check />
+                </span>
+                {c}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );

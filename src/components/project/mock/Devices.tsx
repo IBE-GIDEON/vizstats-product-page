@@ -155,7 +155,7 @@ export function IPhone17({
 
 /* ── iPad Pro 13″ (M5) ────────────────────────────────────────────── */
 // 281.6 × 215.5 mm body, 13″ 2752 × 2064 display (1376 × 1032 pt, 4:3), ~8.4 mm even borders,
-// front camera on the long (landscape) edge. Shown in landscape.
+// front camera on the long (landscape) edge. Landscape by default; portrait on request.
 
 const IPAD_W = 1376;
 const IPAD_H = 1032;
@@ -168,27 +168,56 @@ function ToolbarIcon({ d, size = 22 }: { d: string; size?: number }) {
   );
 }
 
+// the same body in either orientation; cqw sizes are relative to the device's visible width
+const IPAD = {
+  landscape: {
+    box: "aspect-[281.6/215.5]",
+    band: "rounded-[4.3cqw] p-[0.42cqw]",
+    bezel: "rounded-[3.9cqw] p-[2.58cqw]",
+    camera: "left-1/2 top-[1.05cqw] -translate-x-1/2",
+    lens: "h-[0.5cqw] w-[0.5cqw]",
+    glass: "rounded-[1.3cqw]",
+    w: IPAD_W,
+    h: IPAD_H,
+  },
+  portrait: {
+    box: "aspect-[215.5/281.6]",
+    band: "rounded-[5.6cqw] p-[0.55cqw]",
+    bezel: "rounded-[5.1cqw] p-[3.37cqw]",
+    camera: "right-[1.37cqw] top-1/2 -translate-y-1/2",
+    lens: "h-[0.65cqw] w-[0.65cqw]",
+    glass: "rounded-[1.7cqw]",
+    w: IPAD_H,
+    h: IPAD_W,
+  },
+} as const;
+
 export function IPadPro({
   children,
   domain,
+  orientation = "landscape",
   className = "",
 }: {
   children: React.ReactNode;
   domain: string;
+  orientation?: "landscape" | "portrait";
   className?: string;
 }) {
+  const o = IPAD[orientation];
   return (
-    <div className={`@container relative aspect-[281.6/215.5] ${className}`}>
+    <div className={`@container relative ${o.box} ${className}`}>
       {/* aluminium band */}
-      <div className={`absolute inset-0 rounded-[4.3cqw] p-[0.42cqw] ${METAL}`}>
+      <div className={`absolute inset-0 ${o.band} ${METAL}`}>
         {/* black border under the glass */}
-        <div className="relative h-full w-full rounded-[3.9cqw] bg-black p-[2.58cqw]">
-          {/* landscape front camera */}
-          <span className="absolute left-1/2 top-[1.05cqw] h-[0.5cqw] w-[0.5cqw] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_35%_35%,#2b3a4a,#07090c_70%)] ring-1 ring-white/[0.06]" />
+        <div className={`relative h-full w-full bg-black ${o.bezel}`}>
+          {/* front camera, on the long edge */}
+          <span
+            className={`absolute rounded-full bg-[radial-gradient(circle_at_35%_35%,#2b3a4a,#07090c_70%)] ring-1 ring-white/[0.06] ${o.camera} ${o.lens}`}
+          />
 
           {/* display */}
-          <div className="relative h-full w-full overflow-hidden rounded-[1.3cqw] bg-[#0a0a0b]">
-            <NativeScreen width={IPAD_W} height={IPAD_H}>
+          <div className={`relative h-full w-full overflow-hidden bg-[#0a0a0b] ${o.glass}`}>
+            <NativeScreen width={o.w} height={o.h}>
               <div className="relative flex h-full w-full flex-col bg-[#0a0a0b] font-sans text-white">
                 {/* status bar */}
                 <div className="flex h-[24px] shrink-0 items-center justify-between px-[22px] text-[13px] font-semibold">
@@ -230,6 +259,80 @@ export function IPadPro({
             <div className={SHEEN} />
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── MacBook Pro 14-inch ──────────────────────────────────────────── */
+// 312.6 mm wide; 14.2-inch 3024 x 1964 display (1512 x 982 pt) with a camera notch.
+// Shown open, straight on: the lid, then the front edge of the base with its thumb cut-out.
+
+const MAC_W = 1512;
+const MAC_H = 982;
+
+export function MacBookPro({
+  children,
+  domain,
+  className = "",
+}: {
+  children: React.ReactNode;
+  domain: string;
+  className?: string;
+}) {
+  return (
+    <div className={`@container relative ${className}`}>
+      {/* lid: thin aluminium edge, black glass border */}
+      <div className={`rounded-b-[0.9cqw] rounded-t-[2.8cqw] p-[0.3cqw] ${METAL}`}>
+        <div className="relative rounded-b-[0.6cqw] rounded-t-[2.5cqw] bg-black px-[1.5cqw] pb-[3cqw] pt-[1.9cqw]">
+          <div className="relative aspect-[1512/982] overflow-hidden rounded-[0.5cqw] bg-[#0a0a0b]">
+            <NativeScreen width={MAC_W} height={MAC_H}>
+              <div className="relative flex h-full w-full flex-col bg-[#0a0a0b] font-sans text-white">
+                {/* menu bar (the notch sits in it) */}
+                <div className="flex h-[37px] shrink-0 items-center justify-end gap-[14px] bg-black px-[18px] text-[13px] font-medium text-white/85">
+                  <Wifi />
+                  <Battery />
+                  <span>Thu 12 Nov&nbsp;&nbsp;9:41</span>
+                </div>
+                {/* Safari toolbar */}
+                <div className="flex h-[52px] shrink-0 items-center gap-6 border-b border-white/[0.06] bg-[#1b1b1d] px-5">
+                  <span className="flex gap-[8px]">
+                    <span className="h-[12px] w-[12px] rounded-full bg-[#ff5f57]" />
+                    <span className="h-[12px] w-[12px] rounded-full bg-[#febc2e]" />
+                    <span className="h-[12px] w-[12px] rounded-full bg-[#28c840]" />
+                  </span>
+                  <span className="flex gap-4 text-white/60">
+                    <ToolbarIcon d="M15 5l-7 7 7 7" size={20} />
+                    <span className="text-white/25">
+                      <ToolbarIcon d="M9 5l7 7-7 7" size={20} />
+                    </span>
+                  </span>
+                  <div className="mx-auto flex h-[34px] w-[520px] items-center justify-center gap-2 rounded-[9px] bg-white/[0.08] text-[14px] text-white/90">
+                    <svg width="10" height="13" viewBox="0 0 11 14" fill="currentColor" className="text-white/55" aria-hidden>
+                      <path d="M5.5 0A3.6 3.6 0 0 0 1.9 3.6V5.6H1.3C.6 5.6 0 6.2 0 6.9v5.8C0 13.4.6 14 1.3 14h8.4c.7 0 1.3-.6 1.3-1.3V6.9c0-.7-.6-1.3-1.3-1.3h-.6V3.6A3.6 3.6 0 0 0 5.5 0Zm-2 5.6V3.6a2 2 0 1 1 4 0v2Z" />
+                    </svg>
+                    <span className="truncate">{domain}</span>
+                  </div>
+                  <span className="flex gap-4 text-white/60">
+                    <ToolbarIcon d="M12 15V3M7 8l5-5 5 5M5 13v7h14v-7" size={20} />
+                    <ToolbarIcon d="M12 5v14M5 12h14" size={20} />
+                  </span>
+                </div>
+                {/* the web page */}
+                <div className="relative min-h-0 flex-1">{children}</div>
+              </div>
+            </NativeScreen>
+            {/* camera notch */}
+            <div className="absolute left-1/2 top-0 z-20 flex h-[2.15cqw] w-[11.5cqw] -translate-x-1/2 items-center justify-center rounded-b-[0.9cqw] bg-black">
+              <span className="h-[0.5cqw] w-[0.5cqw] rounded-full bg-[radial-gradient(circle_at_35%_35%,#2b3a4a,#07090c_70%)]" />
+            </div>
+            <div className={SHEEN} />
+          </div>
+        </div>
+      </div>
+      {/* base: the front edge, a little wider than the lid, with the thumb cut-out */}
+      <div className="relative -mx-[6%] h-[2.3cqw] rounded-b-[1.4cqw] rounded-t-[0.25cqw] bg-[linear-gradient(to_bottom,#55575c_0%,#2c2d30_38%,#18191b_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_30px_60px_-20px_rgba(0,0,0,1)]">
+        <span className="absolute left-1/2 top-0 h-[0.75cqw] w-[13cqw] -translate-x-1/2 rounded-b-[0.75cqw] bg-[#141517] shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]" />
       </div>
     </div>
   );

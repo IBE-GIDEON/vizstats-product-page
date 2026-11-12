@@ -20,8 +20,23 @@ export type Project = {
    * placed in /public/media). Until it's set, the section shows the product's opening screen.
    */
   video?: string;
+  /** The "Inside the product" boxes, in grid order, with the text of their detail view. */
+  inside: InsideItem[];
   /** "More projects" boxes at the bottom of the page, in display order (a joined 2-column grid). */
   next: ProjectCard[];
+};
+
+/** Each box's visual is tied to its `id`; everything written here is editable text. */
+export type InsideItem = {
+  id: "timeline" | "periodic" | "registry" | "sites" | "live" | "chain" | "responsive";
+  label: string;
+  /** one short sentence (or two) under the visual */
+  body: string[];
+  /** label / value rows beside the text */
+  facts?: [string, string][];
+  /** short tags instead of facts, e.g. the screens a view works on */
+  chips?: string[];
+  cta?: { href: string; label: string };
 };
 
 export type ProjectCard = {
@@ -71,6 +86,74 @@ export const projects: Project[] = [
       "Power Structure",
       "The Tensions",
       "The Verdict",
+    ],
+    inside: [
+      {
+        id: "timeline",
+        label: "Kinetic timeline",
+        body: ["Four machines, from Hero's aeolipile to the induction motor, show how energy systems evolved. Tap an era to jump."],
+        facts: [
+          ["Chapter", "Energy Transition"],
+          ["Eras", "4"],
+          ["Span", "50 AD – 1888"],
+        ],
+      },
+      {
+        id: "periodic",
+        label: "Periodic table",
+        body: ["The minerals the energy transition depends on, picked out on the periodic table. Tap one to see what it's used for."],
+        facts: [
+          ["Key minerals", "8"],
+          ["Secondary", "5"],
+        ],
+      },
+      {
+        id: "registry",
+        label: "Company registry",
+        body: ["The 29 companies behind the projects, tagged state-backed or hybrid and filterable in one tap."],
+        facts: [
+          ["Companies", "29"],
+          ["Ownership", "State-backed · Hybrid"],
+          ["Countries", "5"],
+        ],
+      },
+      {
+        id: "sites",
+        label: "Project sites",
+        body: ["38 mining projects across five countries, each linked to its operator and mineral."],
+        facts: [
+          ["Projects", "38"],
+          ["Countries", "5"],
+          ["Minerals", "Co · Cu · Al · U · Li · Fe"],
+        ],
+      },
+      {
+        id: "live",
+        label: "Live product",
+        body: ["The full story is live: nine chapters, built for any screen."],
+        facts: [
+          ["Address", "miningafrica.chinaglobalsouth.com"],
+          ["Chapters", "9"],
+          ["Format", "Interactive data story"],
+        ],
+        cta: { href: "https://miningafrica.chinaglobalsouth.com", label: "Open product" },
+      },
+      {
+        id: "chain",
+        label: "Command chain",
+        body: ["Who really controls a mine, traced from the site through the operator and parent group to the state and Beijing."],
+        facts: [
+          ["From", "Mine site"],
+          ["To", "Beijing"],
+          ["Links", "5"],
+        ],
+      },
+      {
+        id: "responsive",
+        label: "Responsive",
+        body: ["One story, re-laid out for every screen."],
+        chips: ["Desktop", "Tablet", "Phone"],
+      },
     ],
     next: [
       {
