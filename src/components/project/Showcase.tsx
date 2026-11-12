@@ -33,18 +33,21 @@ export default function Showcase({ project }: { project: Project }) {
           </div>
         </div>
 
-        {/* open the live product — a pale, matte frosted-green pill under the devices (no shine) */}
+        {/* open the live product — a pale, soft store-badge style pill under the devices: matte, no shine */}
         <div className="mt-24 flex justify-center md:mt-32">
           <a
             href={project.product.url}
             target="_blank"
             rel="noreferrer"
-            className="group inline-flex items-center gap-4 rounded-full border border-green/20 bg-green/[0.07] py-2 pl-7 pr-2 text-[16px] font-medium text-[#cfeff3] backdrop-blur-md transition-colors duration-500 hover:border-green/30 hover:bg-green/[0.12] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-green/50"
+            className="group inline-flex items-center gap-3 rounded-full bg-[#e7f0f1] py-3.5 pl-5 pr-6 text-[16px] font-semibold tracking-[-0.01em] text-[#151a1b] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.7),0_0_0_5px_rgba(231,240,241,0.07),0_16px_34px_-18px_rgba(0,0,0,0.9)] transition-colors duration-300 hover:bg-[#f1f7f8] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-[7px] focus-visible:outline-green/60 md:py-4 md:pl-6 md:pr-7 md:text-[17px]"
           >
+            <IconArrowUpRight
+              width={18}
+              height={18}
+              className="text-green-2 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+            />
             Open product
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-green/[0.14] text-green transition-transform duration-500 group-hover:rotate-45">
-              <IconArrowUpRight />
-            </span>
+            <span className="text-[12px] font-semibold text-[#151a1b]/40">Live</span>
           </a>
         </div>
       </div>
