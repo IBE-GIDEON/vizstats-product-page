@@ -1,6 +1,7 @@
 import { IconArrowUpRight } from "@/components/site/icons";
 import { Reveal } from "@/components/ui/motion";
 import type { Project } from "@/content/projects";
+import DevicePair from "./DevicePair";
 import { IPadPro, IPhone17 } from "./mock/Devices";
 import { ProductScreen } from "./mock/ProductScreen";
 
@@ -18,20 +19,20 @@ export default function Showcase({ project }: { project: Project }) {
           </h2>
         </Reveal>
 
-        <div className="relative mt-16 md:mt-24">
-          <div className="pointer-events-none absolute inset-x-[10%] -bottom-24 top-1/3 -z-10 bg-[radial-gradient(50%_50%_at_50%_60%,rgba(224,53,60,0.14),transparent)] blur-2xl" />
-          <div className="mr-[12%] md:mr-[9%]">
+        {/* iPad from the left, iPhone from the right — the phone rests over the iPad's lower-right corner,
+            close to their real relative size */}
+        <DevicePair
+          tabletSlot={
             <IPadPro domain={domain}>
               <ProductScreen chapters={chapters} variant="tablet" />
             </IPadPro>
-          </div>
-          {/* the phone sits over the iPad's lower-right corner, close to their real relative size */}
-          <div className="absolute -bottom-10 right-0 z-10 w-[30%] max-w-[250px] md:-bottom-14 md:w-[21%]">
+          }
+          phoneSlot={
             <IPhone17 domain={domain}>
               <ProductScreen chapters={chapters} variant="phone" initial={0} />
             </IPhone17>
-          </div>
-        </div>
+          }
+        />
 
         {/* open the live product — a pale, soft store-badge style pill under the devices: matte, no shine */}
         <div className="mt-24 flex justify-center md:mt-32">

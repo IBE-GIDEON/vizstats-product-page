@@ -38,7 +38,7 @@ async function ProjectView({ params }: Params) {
 
   return (
     <main>
-      {/* opening: the title on smoke, then the project video — plain page flow */}
+      {/* opening: straight onto the project video — plain page flow */}
       <Opening project={project} />
 
       {/* content clears the icon rail on desktop */}

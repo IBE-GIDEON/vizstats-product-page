@@ -20,7 +20,7 @@ export type Project = {
    * placed in /public/media). Until it's set, the section shows the product's opening screen.
    */
   video?: string;
-  /** The "next project" card stack at the bottom of the page, top card first. */
+  /** "More projects" boxes at the bottom of the page, in display order (4 per row on desktop). */
   next: ProjectCard[];
 };
 
@@ -95,6 +95,14 @@ export const projects: Project[] = [
         meta: "Long-form data story",
         kicker: "Data story",
         shot: "ledger",
+        placeholder: true,
+      },
+      {
+        slug: "ownership-networks",
+        titleLines: ["Ownership", "Networks"],
+        meta: "Interactive network",
+        kicker: "Network explorer",
+        shot: "network",
         placeholder: true,
       },
     ],
