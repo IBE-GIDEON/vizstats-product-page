@@ -13,7 +13,7 @@ const RAIL_EXPANDED = 296;
 
 /**
  * Icon rail on desktop. Hovering the logo (or tabbing into the rail) expands it into
- * the full-text nav; it closes on mouse-out, focus-out or Esc.
+ * the full-text nav; it closes on mouse-out, focus-out or Esc. Clicking an icon only navigates.
  * On mobile it becomes a top bar with a full-screen menu.
  */
 export default function SideRail() {
@@ -57,7 +57,10 @@ export default function SideRail() {
       <motion.aside
         aria-label="Primary"
         onMouseLeave={close}
-        onFocus={() => setOpen(true)}
+        // only keyboard focus (Tab) expands the rail — a mouse click on an icon just navigates
+        onFocus={(e) => {
+          if ((e.target as HTMLElement).matches(":focus-visible")) setOpen(true);
+        }}
         onBlur={(e) => {
           if (!e.currentTarget.contains(e.relatedTarget as Node | null)) close();
         }}
@@ -90,9 +93,10 @@ export default function SideRail() {
               <Link
                 key={item.label}
                 href={item.href}
-                onClick={() => {
+                onClick={(e) => {
                   setPicked(item.label);
                   close();
+                  e.currentTarget.blur(); // don't leave focus behind to reopen the rail
                 }}
                 aria-current={active ? "page" : undefined}
                 className={`group relative flex h-[54px] items-center rounded-xl pl-[15px] pr-3 transition-colors hover:bg-white/[0.045] ${
