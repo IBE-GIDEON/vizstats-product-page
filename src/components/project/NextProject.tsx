@@ -1,18 +1,28 @@
 import { Reveal } from "@/components/ui/motion";
 import type { ProjectCard } from "@/content/projects";
+import { isWebAddress, screenshotOf } from "@/lib/screenshot";
 import { ProjectShot } from "./mock/ProjectShots";
 
 /** One project: a large screenshot with its title underneath. Square edges; the grid shares hairlines. */
 function Box({ card }: { card: ProjectCard }) {
+  const live = isWebAddress(card.url ?? "");
+  const picture = card.image || (live ? screenshotOf(card.url) : "");
   return (
     <a
-      href="#"
+      href={live ? card.url : "#"}
+      target={live ? "_blank" : undefined}
+      rel={live ? "noreferrer" : undefined}
       className="group relative flex flex-col border-b border-r border-line bg-black p-4 transition-colors duration-500 hover:bg-ink-1 focus-visible:z-10 focus-visible:outline focus-visible:outline-1 focus-visible:-outline-offset-1 focus-visible:outline-green/50 sm:p-6 lg:p-8"
     >
       {/* the screenshot */}
       <div className="@container relative aspect-[16/10] overflow-hidden rounded-[4px] border border-white/[0.06] bg-ink-2">
         <div className="absolute inset-0 transition-transform duration-[900ms] ease-out-expo group-hover:scale-[1.03]">
-          <ProjectShot shot={card.shot} />
+          {picture ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={picture} alt="" loading="lazy" className="h-full w-full object-cover object-top" />
+          ) : (
+            <ProjectShot shot={card.shot} />
+          )}
         </div>
       </div>
 

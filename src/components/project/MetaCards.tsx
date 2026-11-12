@@ -3,8 +3,9 @@
 import { motion, type Variants } from "motion/react";
 import { useEffect, useRef } from "react";
 import { EASE } from "@/components/ui/motion";
+import { FactIcon } from "./factIcons";
 
-type Item = { label: string; value: string };
+type Item = { label: string; value: string; icon?: string };
 
 const row: Variants = {
   hidden: {},
@@ -15,54 +16,6 @@ const card: Variants = {
   hidden: { opacity: 0, x: 90, filter: "blur(10px)" },
   show: { opacity: 1, x: 0, filter: "blur(0px)", transition: { duration: 1, ease: EASE } },
 };
-
-/** A small line icon per fact, so each card carries a visual, not just words. */
-const FACT_ICONS: Record<string, React.ReactNode> = {
-  form: (
-    <>
-      <path d="M5 3.5h9.5l4.5 4.5v12.5H5z" />
-      <path d="M14.5 3.5V8H19M8.5 12h7M8.5 15.5h5" />
-    </>
-  ),
-  client: (
-    <>
-      <path d="M3.5 20.5h17M6 20.5V6.5L12 3.5l6 3v14" />
-      <path d="M10 9.5h1M13 9.5h1M10 13h1M13 13h1M11 20.5v-3.5h2v3.5" />
-    </>
-  ),
-  subject: (
-    <>
-      <path d="M6.5 4h11L21 9l-9 11.5L3 9z" />
-      <path d="M3 9h18M9.5 4 12 20.5 14.5 4" />
-    </>
-  ),
-  region: (
-    <>
-      <circle cx="12" cy="12" r="8.5" />
-      <path d="M3.5 12h17M12 3.5c2.4 2.5 3.6 5.3 3.6 8.5s-1.2 6-3.6 8.5M12 3.5C9.6 6 8.4 8.8 8.4 12s1.2 6 3.6 8.5" />
-    </>
-  ),
-  scale: <path d="M5 20.5V13M10 20.5V8M15 20.5v-6M20 20.5V4" />,
-};
-
-function FactIcon({ label }: { label: string }) {
-  const icon = FACT_ICONS[label.toLowerCase()] ?? <circle cx="12" cy="12" r="3" />;
-  return (
-    <svg
-      width={20}
-      height={20}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      {icon}
-    </svg>
-  );
-}
 
 /** "29 companies" → number bright, word in ash. */
 function Line({ text }: { text: string }) {
@@ -188,7 +141,7 @@ export default function MetaCards({ items }: { items: Item[] }) {
       >
         {items.map((item, i) => (
           <motion.article
-            key={item.label}
+            key={i}
             role="listitem"
             variants={card}
             // widths leave the last visible card half-cut at the edge: 1½ cards on phones, 2½ on tablets, 3½ on desktop
@@ -204,12 +157,12 @@ export default function MetaCards({ items }: { items: Item[] }) {
             <div className="relative flex items-start justify-between">
               <span className="eyebrow pt-1 text-ash-3">{item.label}</span>
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.04] text-ash-2 ring-1 ring-white/[0.06] transition-colors duration-300 group-hover:text-green">
-                <FactIcon label={item.label} />
+                <FactIcon name={item.icon} />
               </span>
             </div>
             <p className="relative font-display text-[clamp(21px,1.9vw,27px)] font-semibold leading-[1.08] tracking-[-0.03em] text-fog">
-              {item.value.split(" · ").map((line) => (
-                <Line key={line} text={line} />
+              {item.value.split(" · ").map((line, k) => (
+                <Line key={k} text={line} />
               ))}
             </p>
           </motion.article>

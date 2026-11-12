@@ -65,14 +65,17 @@ export function ProductPoster({
 }
 
 /**
- * The video block, sized to fill its parent. Plays `project.video` when set,
- * otherwise shows the product's opening screen. The bottom edge dissolves through a
+ * The welcome screen, sized to fill its parent: the video if one is set, else the welcome image
+ * (any shape — it is cropped to fill, keeping its focus point in view; phones get the tall image
+ * when there is one), else the product's opening screen. The bottom edge dissolves through a
  * progressive blur and a fade to black instead of ending on a hard line.
  */
 export default function HeroMedia({ project, play }: { project: Project; play: boolean }) {
   const [videoFailed, setVideoFailed] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const showVideo = Boolean(project.video) && !videoFailed;
+  const image = project.heroImage;
+  const showImage = !showVideo && Boolean(image?.src);
 
   // start the reel only once it has come out
   useEffect(() => {
@@ -95,6 +98,18 @@ export default function HeroMedia({ project, play }: { project: Project; play: b
           onError={() => setVideoFailed(true)}
           className="absolute inset-0 h-full w-full object-cover"
         />
+      ) : showImage ? (
+        <picture className="absolute inset-0">
+          {image.mobileSrc && <source media="(max-width: 767px)" srcSet={image.mobileSrc} />}
+          {/* a plain <img>: CMS images can be any link or an uploaded file, so next/image can't know them ahead of time */}
+          <img
+            src={image.src}
+            alt={image.alt}
+            fetchPriority="high"
+            className="h-full w-full object-cover"
+            style={{ objectPosition: image.focus || "50% 50%" }}
+          />
+        </picture>
       ) : (
         <ProductPoster product={project.product} stats={project.stats} play={play} />
       )}

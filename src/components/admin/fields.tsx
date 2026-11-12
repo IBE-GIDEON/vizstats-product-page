@@ -6,6 +6,12 @@
  * editor automatically.
  */
 
+import type { FactIconName, HeroImage } from "@/content/projects";
+import { FACT_ICONS, FactIcon } from "@/components/project/factIcons";
+import HeroImageField, { ImagePicker, VideoField } from "./HeroImageField";
+import { IPadPro, IPhone17 } from "@/components/project/mock/Devices";
+import { isWebAddress, screenshotOf } from "@/lib/screenshot";
+
 export type Path = (string | number)[];
 export type Edit = (path: Path, value: unknown) => void;
 
@@ -27,8 +33,8 @@ const LABELS: Record<string, string> = {
   href: "Link",
   titleLines: "Title",
   summary: "Summary (search results)",
-  lede: "Intro line",
-  ledeAccents: "Highlighted words in the intro",
+  lede: "Intro statement",
+  ledeAccents: "Highlighted words",
   meta: "Fact cards",
   value: "Value",
   stats: "Video stats",
@@ -50,12 +56,39 @@ const LABELS: Record<string, string> = {
   next: "More projects",
   meta_card: "Note",
   kicker: "Type",
+  tabletImage: "iPad screen",
+  phoneImage: "iPhone screen",
+  imageAlt: "Describe the image (for screen readers)",
+};
+
+/** The built-in product visuals a feature can show. */
+const BUILTIN: Record<string, string> = {
+  timeline: "Kinetic timeline (live)",
+  periodic: "Periodic table (interactive)",
+  registry: "Company registry (interactive)",
+  sites: "Project sites",
+  live: "Product opening screen",
+  chain: "Command chain",
+  responsive: "Laptop, tablet and phone",
+};
+
+/** What the "Add" button says under each list. */
+const ADD_LABELS: Record<string, string> = {
+  meta: "Add fact card",
+  inside: "Add feature",
+  nav: "Add link",
+  chapters: "Add chapter",
+  next: "Add project",
+  facts: "Add fact",
+  chips: "Add tag",
+  body: "Add paragraph",
+  ledeAccents: "Add word",
 };
 
 /** Keys tied to code (visuals, routes, icons) — not shown in the editor. */
 const HIDDEN = new Set(["id", "slug", "shot", "icon", "placeholder"]);
 /** Lists whose length is fixed by the design (items can be edited and reordered, not added or removed). */
-const FIXED = new Set(["inside", "stats"]);
+const FIXED = new Set(["stats"]);
 /** Two-part texts: [first words, muted rest] and label / value pairs. */
 const PAIR_HINTS: Record<string, [string, string]> = {
   titleLines: ["Line 1", "Line 2"],
@@ -120,7 +153,12 @@ const Remove = () => (
 
 /** An empty copy of a list item, to add a new one. Code-tied values (ids, visuals, icons) are kept. */
 function blank(v: unknown, key?: string): unknown {
-  if (typeof v === "string") return key === "id" || key === "shot" || key === "icon" ? v : key === "href" ? "#" : "";
+  if (typeof v === "string") {
+    if (key === "id") return `item-${Date.now().toString(36)}`;
+    if (key === "visual") return "image";
+    if (key === "shot" || key === "icon") return v;
+    return key === "href" ? "#" : "";
+  }
   if (typeof v === "number") return 0;
   if (typeof v === "boolean") return v;
   if (Array.isArray(v)) return v.every((x) => typeof x === "string") && v.length !== 2 ? [] : v.map((x) => blank(x));
@@ -159,6 +197,8 @@ export function Field({
   path,
   onEdit,
   parent,
+  listKey,
+  siblings,
   bare,
 }: {
   name: string | number;
@@ -166,15 +206,153 @@ export function Field({
   path: Path;
   onEdit: Edit;
   parent?: string | number;
+  /** the nearest list this field sits in */
+  listKey?: string | number;
+  /** the other fields next to this one (e.g. the intro text, for picking its highlighted words) */
+  siblings?: Record<string, unknown>;
   /** render without its own label (inside list items) */
   bare?: boolean;
 }) {
+  // intro statement: click words to highlight them
+  if (name === "ledeAccents" && Array.isArray(value) && typeof siblings?.lede === "string") {
+    return (
+      <div>
+        <p className="mb-1 text-[13px] font-medium text-ash-3">{labelFor(name)}</p>
+        <p className="mb-3 text-[12.5px] text-ash-2">Click a word to show it in the accent colour; click it again to turn it off.</p>
+        <AccentPicker text={siblings.lede} value={value as string[]} onChange={(v) => onEdit(path, v)} />
+      </div>
+    );
+  }
+
+  // features: what shows under the text, and the image / video itself
+  if (name === "visual" && typeof value === "string") {
+    return (
+      <div>
+        <p className="mb-2 text-[13px] font-medium text-ash-3">Shows</p>
+        <select value={value} onChange={(e) => onEdit(path, e.target.value)} className={`${input} max-w-[360px]`}>
+          <optgroup label="Your media">
+            <option value="image">Image</option>
+            <option value="video">Video</option>
+            <option value="none">Text only</option>
+          </optgroup>
+          <optgroup label="Built-in product visuals">
+            {Object.entries(BUILTIN).map(([k, l]) => (
+              <option key={k} value={k}>
+                {l}
+              </option>
+            ))}
+          </optgroup>
+        </select>
+      </div>
+    );
+  }
+  if (siblings && "visual" in siblings && (name === "src" || name === "alt")) {
+    const kind = siblings.visual;
+    if (name === "alt") return kind === "image" ? <Field name="imageAlt" value={value} path={path} onEdit={onEdit} /> : null;
+    if (kind === "image")
+      return <ImagePicker title="Image" hint="Any shape — shown in full at the width of the page." src={String(value)} onSrc={(v) => onEdit(path, v)} />;
+    if (kind === "video") return <VideoField title="Video" src={String(value)} onSrc={(v) => onEdit(path, v)} />;
+    return null;
+  }
+  // devices section: real screenshots, previewed in the actual frames
+  if ((name === "tabletImage" || name === "phoneImage") && typeof value === "string") {
+    const tablet = name === "tabletImage";
+    return (
+      <div className="rounded-[10px] border border-paper-line bg-white/60 p-4 sm:p-5">
+        <ImagePicker
+          title={tablet ? "iPad screen" : "iPhone screen"}
+          hint={
+            tablet
+              ? "A screenshot taken on an iPad Pro 13-inch, held sideways: 2752 × 2064 px (4:3). Leave empty to show the live product."
+              : "A screenshot taken on an iPhone 17: 1206 × 2622 px. Leave empty to show the live product."
+          }
+          spec={tablet ? { ratio: 4 / 3, label: "4:3", w: 2752, h: 2064 } : { ratio: 1206 / 2622, label: "iPhone 17", w: 1206, h: 2622 }}
+          src={value}
+          onSrc={(v) => onEdit(path, v)}
+        />
+        {value && (
+          <div className="mt-5">
+            <p className="mb-3 text-[13px] font-medium text-ash-3">Preview</p>
+            <div className="rounded-[8px] bg-ink-2 p-6">
+              <div className={tablet ? "mx-auto max-w-[420px]" : "mx-auto max-w-[150px]"}>
+                {tablet ? (
+                  <IPadPro domain="" screenshot={value}>
+                    {null}
+                  </IPadPro>
+                ) : (
+                  <IPhone17 domain="" screenshot={value}>
+                    {null}
+                  </IPhone17>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // more projects: a link (captured automatically) and an optional own image
+  if (listKey === "next" && name === "url" && typeof value === "string") {
+    const live = isWebAddress(value);
+    return (
+      <div>
+        <p className="mb-1 text-[13px] font-medium text-ash-3">Project link</p>
+        <p className="mb-3 text-[12.5px] text-ash-2">Paste the live project&rsquo;s address; its screenshot is captured automatically at the box&rsquo;s 16:10 shape.</p>
+        <TextInput value={value} placeholder="https://…" onChange={(v) => onEdit(path, v.trim())} />
+        {live && !siblings?.image && (
+          <div className="mt-3">
+            <div className="relative aspect-[16/10] max-w-[420px] overflow-hidden rounded-[8px] bg-ink-2 ring-1 ring-black/10">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={screenshotOf(value)} alt="" className="h-full w-full object-cover object-top" />
+            </div>
+            <p className="mt-2 text-[12px] text-ash-2">Captured from the live page (it can take a few seconds the first time).</p>
+          </div>
+        )}
+      </div>
+    );
+  }
+  if (listKey === "next" && name === "image" && typeof value === "string") {
+    return (
+      <ImagePicker
+        title="Your own image (optional)"
+        hint="Replaces the captured screenshot. Best 16:10, 2560 × 1600 px."
+        spec={{ ratio: 16 / 10, label: "16:10", w: 2560, h: 1600 }}
+        src={value}
+        onSrc={(v) => onEdit(path, v)}
+      />
+    );
+  }
+
+  // welcome screen video
+  if (name === "video" && typeof value === "string") {
+    return (
+      <VideoField
+        title="Welcome video (optional)"
+        hint="Shown instead of the image when set. Best 16:9, 1920 × 1080 px or larger, MP4."
+        src={value}
+        onSrc={(v) => onEdit(path, v)}
+      />
+    );
+  }
+
+  // fact cards: pick the icon
+  if (name === "icon" && listKey === "meta" && typeof value === "string") {
+    return (
+      <div>
+        <p className="mb-2 text-[13px] font-medium text-ash-3">Icon</p>
+        <IconPicker value={value} onChange={(v) => onEdit(path, v)} />
+      </div>
+    );
+  }
   if (typeof name === "string" && HIDDEN.has(name)) return null;
   const key = typeof name === "string" ? name : String(parent ?? "");
 
   let control: React.ReactNode;
 
-  if (typeof value === "string") {
+  if (name === "heroImage" && isObject(value)) {
+    control = <HeroImageField value={value as HeroImage} path={path} onEdit={onEdit} />;
+  } else if (typeof value === "string") {
     control = (
       <TextInput
         value={value}
@@ -200,7 +378,7 @@ export function Field({
     control = (
       <div className="space-y-5 rounded-[10px] border border-paper-line bg-white/60 p-4 sm:p-5">
         {Object.entries(value).map(([k, v]) => (
-          <Field key={k} name={k} value={v} path={[...path, k]} onEdit={onEdit} parent={name} />
+          <Field key={k} name={k} value={v} path={[...path, k]} onEdit={onEdit} parent={name} listKey={listKey} siblings={value} />
         ))}
       </div>
     );
@@ -254,7 +432,7 @@ function List({ name, items, path, onEdit }: { name: string | number; items: unk
         simple ? (
           <div key={i} className="flex items-start gap-2">
             <div className="min-w-0 flex-1">
-              <Field name={i} value={item} path={[...path, i]} onEdit={onEdit} parent={name} bare />
+              <Field name={i} value={item} path={[...path, i]} onEdit={onEdit} parent={name} listKey={name} bare />
             </div>
             <div className="pt-1.5">{controls(i)}</div>
           </div>
@@ -268,7 +446,7 @@ function List({ name, items, path, onEdit }: { name: string | number; items: unk
               <span onClick={(e) => e.preventDefault()}>{controls(i)}</span>
             </summary>
             <div className="border-t border-paper-line p-4 sm:p-5">
-              <Field name={i} value={item} path={[...path, i]} onEdit={onEdit} parent={name} bare />
+              <Field name={i} value={item} path={[...path, i]} onEdit={onEdit} parent={name} listKey={name} bare />
             </div>
           </details>
         ),
@@ -279,9 +457,61 @@ function List({ name, items, path, onEdit }: { name: string | number; items: unk
           onClick={add}
           className="inline-flex items-center gap-2 rounded-[8px] border border-dashed border-black/20 px-3.5 py-2 text-[13.5px] font-medium text-ash-3 transition-colors hover:border-black/40 hover:text-ink-1"
         >
-          <span className="text-[16px] leading-none">+</span> Add {simple ? "line" : "item"}
+          <span className="text-[16px] leading-none">+</span>{" "}
+          {(typeof name === "string" && ADD_LABELS[name]) || `Add ${simple ? "line" : "item"}`}
         </button>
       )}
+    </div>
+  );
+}
+
+/** A grid of the fact-card icons; the chosen one is outlined. */
+function IconPicker({ value, onChange }: { value: string; onChange: (v: FactIconName) => void }) {
+  return (
+    <div role="radiogroup" aria-label="Icon" className="flex flex-wrap gap-1.5">
+      {(Object.keys(FACT_ICONS) as FactIconName[]).map((name) => {
+        const on = name === value;
+        return (
+          <button
+            key={name}
+            type="button"
+            role="radio"
+            aria-checked={on}
+            aria-label={FACT_ICONS[name].label}
+            title={FACT_ICONS[name].label}
+            onClick={() => onChange(name)}
+            className={`flex h-10 w-10 items-center justify-center rounded-[8px] border transition-colors ${
+              on ? "border-green-2 bg-green/10 text-ink-1 ring-[3px] ring-green/15" : "border-paper-line bg-white text-ash-3 hover:border-black/25 hover:text-ink-1"
+            }`}
+          >
+            <FactIcon name={name} size={18} />
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** The intro as it appears on the site; each word toggles its highlight. */
+function AccentPicker({ text, value, onChange }: { text: string; value: string[]; onChange: (v: string[]) => void }) {
+  const words = text.split(" ").filter(Boolean);
+  const toggle = (w: string) => onChange(value.includes(w) ? value.filter((x) => x !== w) : [...value, w]);
+  return (
+    <div className="rounded-[10px] bg-ink-2 px-5 py-5 font-display text-[clamp(19px,2vw,24px)] font-medium leading-[1.25] tracking-[-0.02em] text-fog sm:px-7 sm:py-6">
+      {words.map((w, i) => {
+        const on = value.includes(w);
+        return (
+          <button
+            key={i}
+            type="button"
+            aria-pressed={on}
+            onClick={() => toggle(w)}
+            className={`mr-[0.25em] rounded-[4px] px-[0.08em] transition-colors hover:bg-white/10 ${on ? "text-green" : ""}`}
+          >
+            {w}
+          </button>
+        );
+      })}
     </div>
   );
 }

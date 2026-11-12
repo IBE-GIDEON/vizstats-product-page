@@ -89,11 +89,14 @@ const IPHONE_H = 874;
 export function IPhone17({
   children,
   domain,
+  screenshot,
   className = "",
 }: {
   children: React.ReactNode;
   /** shown in Safari's address bar */
   domain: string;
+  /** a real iPhone 17 screenshot (1206 × 2622 px) shown instead of the live screen */
+  screenshot?: string;
   className?: string;
 }) {
   return (
@@ -112,6 +115,16 @@ export function IPhone17({
         <div className="relative h-full w-full rounded-[16.9cqw] bg-black p-[2.48cqw]">
           {/* display */}
           <div className="relative h-full w-full overflow-hidden rounded-[14.4cqw] bg-[#0a0a0b]">
+            {screenshot ? (
+              <>
+                {/* a real device screenshot fills the display */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={screenshot} alt="" className="absolute inset-0 h-full w-full object-cover object-top" />
+                {/* the Dynamic Island and home indicator are hardware / system — drawn over the screenshot */}
+                <span className="absolute left-1/2 top-[2.55cqw] h-[8.6cqw] w-[29.2cqw] -translate-x-1/2 rounded-full bg-black" />
+                <span className="absolute bottom-[1.85cqw] left-1/2 h-[1.16cqw] w-[31cqw] -translate-x-1/2 rounded-full bg-white/80 mix-blend-difference" />
+              </>
+            ) : (
             <NativeScreen width={IPHONE_W} height={IPHONE_H}>
               <div className="relative h-full w-full bg-[#0a0a0b] font-sans text-white">
                 {/* the web page, between the status bar and Safari's bottom bar */}
@@ -145,6 +158,7 @@ export function IPhone17({
                 <div className="absolute bottom-[8px] left-1/2 h-[5px] w-[134px] -translate-x-1/2 rounded-full bg-white/80" />
               </div>
             </NativeScreen>
+            )}
             <div className={SHEEN} />
           </div>
         </div>
@@ -196,11 +210,14 @@ export function IPadPro({
   children,
   domain,
   orientation = "landscape",
+  screenshot,
   className = "",
 }: {
   children: React.ReactNode;
   domain: string;
   orientation?: "landscape" | "portrait";
+  /** a real iPad Pro 13-inch screenshot (2752 × 2064 px landscape) shown instead of the live screen */
+  screenshot?: string;
   className?: string;
 }) {
   const o = IPAD[orientation];
@@ -217,6 +234,14 @@ export function IPadPro({
 
           {/* display */}
           <div className={`relative h-full w-full overflow-hidden bg-[#0a0a0b] ${o.glass}`}>
+            {screenshot ? (
+              <>
+                {/* a real device screenshot fills the display */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={screenshot} alt="" className="absolute inset-0 h-full w-full object-cover object-top" />
+                <span className="absolute bottom-[0.6cqw] left-1/2 h-[0.38cqw] w-[20.5cqw] -translate-x-1/2 rounded-full bg-white/80 mix-blend-difference" />
+              </>
+            ) : (
             <NativeScreen width={o.w} height={o.h}>
               <div className="relative flex h-full w-full flex-col bg-[#0a0a0b] font-sans text-white">
                 {/* status bar */}
@@ -256,6 +281,7 @@ export function IPadPro({
                 <div className="absolute bottom-[8px] left-1/2 h-[5px] w-[300px] -translate-x-1/2 rounded-full bg-white/75" />
               </div>
             </NativeScreen>
+            )}
             <div className={SHEEN} />
           </div>
         </div>

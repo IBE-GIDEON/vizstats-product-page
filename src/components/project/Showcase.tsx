@@ -15,7 +15,7 @@ export default function Showcase({ project }: { project: Project }) {
       <div className="container-x">
         <Reveal>
           <h2 className="font-display text-[clamp(32px,4.4vw,64px)] font-semibold leading-[1] tracking-[-0.045em]">
-            {project.headings.showcase[0]} <span className="text-ash-2">{project.headings.showcase[1]}</span>
+            {project.showcase.heading[0]} <span className="text-ash-2">{project.showcase.heading[1]}</span>
           </h2>
         </Reveal>
 
@@ -23,12 +23,12 @@ export default function Showcase({ project }: { project: Project }) {
             close to their real relative size */}
         <DevicePair
           tabletSlot={
-            <IPadPro domain={domain}>
+            <IPadPro domain={domain} screenshot={project.showcase.tabletImage || undefined}>
               <ProductScreen chapters={chapters} variant="tablet" />
             </IPadPro>
           }
           phoneSlot={
-            <IPhone17 domain={domain}>
+            <IPhone17 domain={domain} screenshot={project.showcase.phoneImage || undefined}>
               <ProductScreen chapters={chapters} variant="phone" initial={0} />
             </IPhone17>
           }
@@ -47,7 +47,7 @@ export default function Showcase({ project }: { project: Project }) {
               height={18}
               className="text-green-2 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
             />
-            {project.product.cta.label}
+            {project.showcase.cta}
           </a>
         </div>
       </div>

@@ -339,9 +339,9 @@ function ResponsiveDetail({ project }: { project: Project }) {
 
 /* ── content ──────────────────────────────────────────────────────── */
 
-/** The visual for each box, by id. All the words come from the project content. */
-function mediaFor(id: InsideItem["id"], project: Project): React.ReactNode {
-  switch (id) {
+/** The visual under a feature: a built-in product piece, the editor's image or video, or nothing. */
+function mediaFor(item: InsideItem, project: Project): React.ReactNode {
+  switch (item.visual) {
     case "timeline":
       return <LiveScreens project={project} />;
     case "periodic":
@@ -356,9 +356,17 @@ function mediaFor(id: InsideItem["id"], project: Project): React.ReactNode {
       return <ChainDetail stats={project.stats} />;
     case "responsive":
       return <ResponsiveDetail project={project} />;
+    case "image":
+      // any shape: shown in full at the column width
+      // eslint-disable-next-line @next/next/no-img-element
+      return item.src ? <img src={item.src} alt={item.alt} loading="lazy" className="block h-auto w-full" /> : null;
+    case "video":
+      return item.src ? <video src={item.src} autoPlay muted loop playsInline className="block h-auto w-full" /> : null;
+    default:
+      return null;
   }
 }
 
 export function bentoDetails(project: Project): BentoDetail[] {
-  return project.inside.map((item) => ({ ...item, media: mediaFor(item.id, project) }));
+  return project.inside.map((item) => ({ ...item, media: mediaFor(item, project) }));
 }

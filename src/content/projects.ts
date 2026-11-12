@@ -4,7 +4,8 @@ export type Project = {
   slug: string;
   titleLines: [string, string];
   summary: string;
-  meta: { label: string; value: string }[];
+  /** the fact cards under the welcome screen — as many as you like */
+  meta: { label: string; value: string; icon: FactIconName }[];
   stats: { value: number; label: string }[];
   lede: string;
   /** words in the lede picked out in the accent colour */
@@ -15,27 +16,62 @@ export type Project = {
     eyebrow: string;
     headline: [string, string];
     question: string;
-    /** the "Open product" button under the devices */
-    cta: { label: string };
   };
   chapters: string[];
   /**
    * Product screen recording for the video section (e.g. "/media/asian-mining-giants.mp4"
    * placed in /public/media). Until it's set, the section shows the product's opening screen.
    */
-  video?: string;
+  video: string;
+  /** The welcome (first) screen image. Shown instead of the product's opening screen when set. */
+  heroImage: HeroImage;
   /** Section headings, each as [first words, muted rest]. */
-  headings: { inside: [string, string]; showcase: [string, string]; more: [string, string] };
+  headings: { inside: [string, string]; more: [string, string] };
+  /** The iPad + iPhone section: heading, optional real screenshots, and the button under them. */
+  showcase: {
+    heading: [string, string];
+    /** iPad Pro 13-inch screenshot, landscape 2752 × 2064 px (4:3); empty = the live product screen */
+    tabletImage: string;
+    /** iPhone 17 screenshot, 1206 × 2622 px; empty = the live product screen */
+    phoneImage: string;
+    /** the button under the devices (it opens the product address) */
+    cta: string;
+  };
   /** "Inside the product": the features shown one after another, each with its visual. */
   inside: InsideItem[];
   /** "More projects" boxes at the bottom of the page, in display order (a joined 2-column grid). */
   next: ProjectCard[];
 };
 
-/** Each box's visual is tied to its `id`; everything written here is editable text. */
+/**
+ * Any image fits: it fills the screen and is cropped to suit, keeping `focus` in view.
+ * Best shapes: wide 16:9 (2560 × 1440 px) for desktop and tablet; optional tall 9:16 (1080 × 1920 px) for phones.
+ */
+export type HeroImage = {
+  /** wide image (a link, or an image uploaded in the CMS); empty = show the product's opening screen */
+  src: string;
+  /** optional tall image for phones; empty = crop the wide one */
+  mobileSrc: string;
+  /** the point kept in view when the image is cropped, as "x% y%" */
+  focus: string;
+  /** what the image shows, for screen readers */
+  alt: string;
+};
+
+/** The product visuals built into the site (live, interactive pieces of the product). */
+export type BuiltinVisual = "timeline" | "periodic" | "registry" | "sites" | "live" | "chain" | "responsive";
+
+/** One feature in "Inside the product". Add as many as you like in the CMS. */
 export type InsideItem = {
-  id: "timeline" | "periodic" | "registry" | "sites" | "live" | "chain" | "responsive";
+  /** unique per feature */
+  id: string;
   label: string;
+  /** what shows under the text: a built-in product visual, an image, a video, or nothing (text only) */
+  visual: BuiltinVisual | "image" | "video" | "none";
+  /** the image or video (a link, or an image uploaded in the CMS) when `visual` is image / video */
+  src: string;
+  /** what the image shows, for screen readers */
+  alt: string;
   /** one short sentence (or two) under the visual */
   body: string[];
   /** label / value rows beside the text */
@@ -45,11 +81,34 @@ export type InsideItem = {
   cta?: { href: string; label: string };
 };
 
+/** Icons available for the fact cards (drawn in components/project/factIcons.tsx). */
+export type FactIconName =
+  | "document"
+  | "building"
+  | "gem"
+  | "globe"
+  | "pin"
+  | "bars"
+  | "trend"
+  | "calendar"
+  | "clock"
+  | "people"
+  | "layers"
+  | "database"
+  | "monitor"
+  | "award"
+  | "tag"
+  | "link";
+
 export type ProjectCard = {
   slug: string;
   titleLines: [string, string];
   meta: string;
   kicker: string;
+  /** the live project's address — its screenshot is captured automatically for the box */
+  url: string;
+  /** your own image for the box instead of the capture (16:10, 2560 × 1600 px) */
+  image: string;
   /** which desktop screenshot the card shows (see components/project/mock/ProjectShots.tsx) */
   shot: "marble" | "pulse" | "ledger" | "network";
   /** a stand-in until the real project's details are supplied */
@@ -63,11 +122,11 @@ export const projects: Project[] = [
     summary:
       "A long-form investigation into how 29 Chinese state-backed and hybrid enterprises came to dominate Africa's critical-minerals supply chain.",
     meta: [
-      { label: "Form", value: "Data story" },
-      { label: "Client", value: "The China–Global South Project" },
-      { label: "Subject", value: "Critical minerals · Geopolitics" },
-      { label: "Region", value: "Africa" },
-      { label: "Scale", value: "29 companies · 38 projects · 5 countries" },
+      { label: "Form", value: "Data story", icon: "document" },
+      { label: "Client", value: "The China–Global South Project", icon: "building" },
+      { label: "Subject", value: "Critical minerals · Geopolitics", icon: "gem" },
+      { label: "Region", value: "Africa", icon: "globe" },
+      { label: "Scale", value: "29 companies · 38 projects · 5 countries", icon: "bars" },
     ],
     stats: [
       { value: 29, label: "Companies" },
@@ -76,13 +135,14 @@ export const projects: Project[] = [
     ],
     lede: "A long-form investigation into how 29 Chinese state-backed and hybrid enterprises came to dominate Africa's critical-minerals supply chain.",
     ledeAccents: ["29"],
+    video: "",
+    heroImage: { src: "", mobileSrc: "", focus: "50% 50%", alt: "" },
     product: {
       url: "https://miningafrica.chinaglobalsouth.com",
       domain: "miningafrica.chinaglobalsouth.com",
       eyebrow: "Asian mining giants in Africa",
       headline: ["China's footprint", "in critical minerals."],
       question: "Who are the actors and stakeholders of China's engagement in critical minerals in Africa?",
-      cta: { label: "Open product" },
     },
     chapters: [
       "Energy Transition",
@@ -97,12 +157,20 @@ export const projects: Project[] = [
     ],
     headings: {
       inside: ["Inside", "the product."],
-      showcase: ["A kinetic timeline", "of energy machines."],
       more: ["More", "projects."],
+    },
+    showcase: {
+      heading: ["A kinetic timeline", "of energy machines."],
+      tabletImage: "",
+      phoneImage: "",
+      cta: "Open product",
     },
     inside: [
       {
         id: "timeline",
+        visual: "timeline",
+        src: "",
+        alt: "",
         label: "Kinetic timeline",
         body: ["Four machines, from Hero's aeolipile to the induction motor, show how energy systems evolved. Tap an era to jump."],
         facts: [
@@ -113,6 +181,9 @@ export const projects: Project[] = [
       },
       {
         id: "periodic",
+        visual: "periodic",
+        src: "",
+        alt: "",
         label: "Periodic table",
         body: ["The minerals the energy transition depends on, picked out on the periodic table. Tap one to see what it's used for."],
         facts: [
@@ -122,6 +193,9 @@ export const projects: Project[] = [
       },
       {
         id: "registry",
+        visual: "registry",
+        src: "",
+        alt: "",
         label: "Company registry",
         body: ["The 29 companies behind the projects, tagged state-backed or hybrid and filterable in one tap."],
         facts: [
@@ -132,6 +206,9 @@ export const projects: Project[] = [
       },
       {
         id: "sites",
+        visual: "sites",
+        src: "",
+        alt: "",
         label: "Project sites",
         body: ["38 mining projects across five countries, each linked to its operator and mineral."],
         facts: [
@@ -142,6 +219,9 @@ export const projects: Project[] = [
       },
       {
         id: "live",
+        visual: "live",
+        src: "",
+        alt: "",
         label: "Live product",
         body: ["The full story is live: nine chapters, built for any screen."],
         facts: [
@@ -153,6 +233,9 @@ export const projects: Project[] = [
       },
       {
         id: "chain",
+        visual: "chain",
+        src: "",
+        alt: "",
         label: "Command chain",
         body: ["Who really controls a mine, traced from the site through the operator and parent group to the state and Beijing."],
         facts: [
@@ -163,6 +246,9 @@ export const projects: Project[] = [
       },
       {
         id: "responsive",
+        visual: "responsive",
+        src: "",
+        alt: "",
         label: "Responsive",
         body: ["One story, re-laid out for every screen."],
         chips: ["Desktop", "Tablet", "Phone"],
@@ -171,6 +257,8 @@ export const projects: Project[] = [
     next: [
       {
         slug: "africa-mining-presence",
+        url: "",
+        image: "",
         titleLines: ["Africa Mining", "Presence"],
         meta: "30+ projects · 5 countries",
         kicker: "Interactive explorer",
@@ -179,6 +267,8 @@ export const projects: Project[] = [
       // ↓ stand-ins: replace with the studio's real projects
       {
         slug: "energy-transition-atlas",
+        url: "",
+        image: "",
         titleLines: ["Energy Transition", "Atlas"],
         meta: "Data dashboard",
         kicker: "Dashboard",
@@ -187,6 +277,8 @@ export const projects: Project[] = [
       },
       {
         slug: "debt-and-infrastructure",
+        url: "",
+        image: "",
         titleLines: ["Debt &", "Infrastructure"],
         meta: "Long-form data story",
         kicker: "Data story",
@@ -195,6 +287,8 @@ export const projects: Project[] = [
       },
       {
         slug: "ownership-networks",
+        url: "",
+        image: "",
         titleLines: ["Ownership", "Networks"],
         meta: "Interactive network",
         kicker: "Network explorer",

@@ -13,7 +13,7 @@ function Check() {
   );
 }
 
-/** One feature: title on the left, a short line and its facts on the right, then the visual at full width. */
+/** One feature: title on the left, a short line and its facts on the right, then its visual (if any) at full width. */
 function Feature({ item, index }: { item: BentoDetail; index: number }) {
   return (
     <article>
@@ -79,8 +79,16 @@ function Feature({ item, index }: { item: BentoDetail; index: number }) {
         </div>
       </Reveal>
 
-      {/* the visual, big, on a dark screen panel */}
-      <div className="mt-10 overflow-hidden rounded-[6px] bg-ink-2 p-3 sm:p-6 md:mt-14 md:p-10 lg:p-12">{item.media}</div>
+      {/* the visual, big: built-in product pieces on a dark screen panel, images and videos edge to edge */}
+      {item.media != null && (
+        <div
+          className={`mt-10 overflow-hidden rounded-[6px] md:mt-14 ${
+            item.visual === "image" || item.visual === "video" ? "bg-ink-2" : "bg-ink-2 p-3 sm:p-6 md:p-10 lg:p-12"
+          }`}
+        >
+          {item.media}
+        </div>
+      )}
     </article>
   );
 }

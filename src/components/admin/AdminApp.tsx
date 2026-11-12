@@ -20,12 +20,14 @@ function sectionsFor(content: Content): Section[] {
     const group = p.titleLines.join(" ");
     const base: Path = ["projects", i];
     out.push(
-      { id: `p${i}-intro`, group, title: "Title & intro", path: base, keys: ["titleLines", "summary", "lede", "ledeAccents"] },
+      { id: `p${i}-title`, group, title: "Title & summary", path: base, keys: ["titleLines", "summary"] },
+      { id: `p${i}-welcome`, group, title: "Welcome screen", path: base, keys: ["heroImage", "video", "stats"] },
       { id: `p${i}-meta`, group, title: "Fact cards", path: base, keys: ["meta"] },
-      { id: `p${i}-video`, group, title: "Video", path: base, keys: ["stats", "video"] },
+      { id: `p${i}-intro`, group, title: "Intro statement", path: base, keys: ["lede", "ledeAccents"] },
       { id: `p${i}-product`, group, title: "Product", path: [...base, "product"] },
       { id: `p${i}-headings`, group, title: "Section headings", path: [...base, "headings"] },
       { id: `p${i}-inside`, group, title: "Inside the product", path: base, keys: ["inside"] },
+      { id: `p${i}-devices`, group, title: "Devices section", path: [...base, "showcase"] },
       { id: `p${i}-chapters`, group, title: "Chapters", path: base, keys: ["chapters"] },
       { id: `p${i}-more`, group, title: "More projects", path: base, keys: ["next"] },
     );
@@ -53,6 +55,7 @@ export default function AdminApp() {
   const live = useContent();
   const [draft, setDraft] = useState<Content | null>(null);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const current = draft ?? live;
   const dirty = draft !== null && JSON.stringify(draft) !== JSON.stringify(live);
 
@@ -64,7 +67,13 @@ export default function AdminApp() {
 
   const save = useCallback(async () => {
     if (!draft) return;
-    await saveContent(draft);
+    try {
+      await saveContent(draft);
+    } catch {
+      setError("Couldn't save: this browser's storage is full. Use a smaller image, or paste an image link instead of uploading.");
+      return;
+    }
+    setError(null);
     setDraft(null);
     setSavedAt(new Date());
   }, [draft]);
@@ -211,9 +220,15 @@ export default function AdminApp() {
             Saved to: {STORE_NAME}. Press Save (or Ctrl + S) to publish your edits.
           </p>
 
+          {error && (
+            <p role="alert" className="mt-5 rounded-[8px] border border-[#e0353c]/30 bg-[#e0353c]/[0.06] px-4 py-3 text-[13.5px] text-[#9b1c22]">
+              {error}
+            </p>
+          )}
+
           <div className="mt-8 space-y-7">
             {fields.map(([k, v]) => (
-              <Field key={k} name={k} value={v} path={[...active.path, k]} onEdit={edit} />
+              <Field key={k} name={k} value={v} path={[...active.path, k]} onEdit={edit} siblings={target as Record<string, unknown>} />
             ))}
             {fields.length === 0 && <p className="text-[14px] text-ash-3">Nothing to edit here.</p>}
           </div>
