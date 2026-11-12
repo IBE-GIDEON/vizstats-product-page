@@ -33,25 +33,16 @@ export default function Showcase({ project }: { project: Project }) {
           </div>
         </div>
 
-        {/* open the live product — a green glass pill under the devices */}
-        <div className="relative mt-24 flex justify-center md:mt-32">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute left-1/2 top-1/2 h-24 w-72 -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(closest-side,rgba(90,210,226,0.28),transparent)] blur-xl"
-          />
+        {/* open the live product — a pale, matte frosted-green pill under the devices (no shine) */}
+        <div className="mt-24 flex justify-center md:mt-32">
           <a
             href={project.product.url}
             target="_blank"
             rel="noreferrer"
-            className="group relative inline-flex items-center gap-4 overflow-hidden rounded-full border border-green/30 bg-green/[0.09] py-2 pl-7 pr-2 text-[16px] font-medium text-fog shadow-[inset_0_1px_0_rgba(255,255,255,0.16),inset_0_-1px_0_rgba(90,210,226,0.18),0_24px_60px_-24px_rgba(90,210,226,0.55)] backdrop-blur-xl backdrop-saturate-150 transition-colors duration-500 hover:border-green/55 hover:bg-green/[0.16] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-green/60"
+            className="group inline-flex items-center gap-4 rounded-full border border-green/20 bg-green/[0.07] py-2 pl-7 pr-2 text-[16px] font-medium text-[#cfeff3] backdrop-blur-md transition-colors duration-500 hover:border-green/30 hover:bg-green/[0.12] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-green/50"
           >
-            {/* glass sheen */}
-            <span
-              aria-hidden
-              className="pointer-events-none absolute inset-x-5 top-0 h-1/2 rounded-b-full bg-gradient-to-b from-white/[0.14] to-transparent"
-            />
-            <span className="relative">Open product</span>
-            <span className="relative flex h-11 w-11 items-center justify-center rounded-full bg-green text-black shadow-[0_0_24px_-4px_rgba(90,210,226,0.8)] transition-transform duration-500 group-hover:rotate-45">
+            Open product
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-green/[0.14] text-green transition-transform duration-500 group-hover:rotate-45">
               <IconArrowUpRight />
             </span>
           </a>
