@@ -15,7 +15,7 @@ export default function Showcase({ project }: { project: Project }) {
       <div className="container-x">
         <Reveal>
           <h2 className="font-display text-[clamp(32px,4.4vw,64px)] font-semibold leading-[1] tracking-[-0.045em]">
-            A kinetic timeline <span className="text-ash-2">of energy machines.</span>
+            {project.headings.showcase[0]} <span className="text-ash-2">{project.headings.showcase[1]}</span>
           </h2>
         </Reveal>
 
@@ -47,8 +47,7 @@ export default function Showcase({ project }: { project: Project }) {
               height={18}
               className="text-green-2 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
             />
-            Open product
-            <span className="text-[12px] font-semibold text-[#151a1b]/40">Live</span>
+            {project.product.cta.label}
           </a>
         </div>
       </div>

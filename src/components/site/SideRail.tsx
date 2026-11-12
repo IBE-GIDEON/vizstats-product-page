@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { site } from "@/content/site";
+import { useContent } from "@/lib/cms/useContent";
 import { LogoMark, Wordmark } from "./Logo";
 import { IconClose, IconPanelOpen, NavGlyph } from "./icons";
 
@@ -20,6 +20,7 @@ export default function SideRail() {
   const [open, setOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+  const { site } = useContent();
 
   const close = () => setOpen(false);
 
@@ -37,6 +38,9 @@ export default function SideRail() {
   const [picked, setPicked] = useState<string | null>(null);
   const routeMatch = site.nav.find((n) => n.href.startsWith("/work") && pathname?.startsWith(n.href))?.label ?? null;
   const selected = picked ?? routeMatch;
+
+  // the CMS has its own chrome
+  if (pathname?.startsWith("/admin")) return null;
 
   return (
     <>

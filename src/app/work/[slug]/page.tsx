@@ -1,12 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import Bento from "@/components/project/Bento";
-import NextProject from "@/components/project/NextProject";
-import Opening from "@/components/project/Opening";
-import Overview from "@/components/project/Overview";
-import Showcase from "@/components/project/Showcase";
-import Footer from "@/components/site/Footer";
+import ProjectSections from "@/components/project/ProjectSections";
 import { getProject, projects } from "@/content/projects";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -15,6 +10,7 @@ export function generateStaticParams() {
   return projects.map((p) => ({ slug: p.slug }));
 }
 
+// NOTE: metadata uses the default content; CMS edits reach it once the store is server-side (Convex).
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const project = getProject(slug);
@@ -33,22 +29,12 @@ export default function ProjectPage({ params }: Params) {
 
 async function ProjectView({ params }: Params) {
   const { slug } = await params;
-  const project = getProject(slug);
-  if (!project) notFound();
+  if (!getProject(slug)) notFound();
 
   return (
     <main>
-      {/* opening: straight onto the project video — plain page flow */}
-      <Opening project={project} />
-
-      {/* content clears the icon rail on desktop */}
-      <div className="md:pl-[72px]">
-        <Overview project={project} />
-        <Bento project={project} />
-        <Showcase project={project} />
-        <NextProject next={project.next} heading={project.headings.more} />
-        <Footer />
-      </div>
+      {/* every section reads live content (defaults + CMS edits) */}
+      <ProjectSections slug={slug} />
     </main>
   );
 }

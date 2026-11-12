@@ -24,7 +24,7 @@ export default function Overview({ project }: { project: Project }) {
         <div className="mt-20 md:mt-28 md:pl-[25%]">
           <Lede
             text={project.lede}
-            accents={["29"]}
+            accents={project.ledeAccents}
             className="font-display text-[clamp(28px,3.7vw,54px)] font-medium leading-[1.08] tracking-[-0.032em] text-fog"
           />
         </div>

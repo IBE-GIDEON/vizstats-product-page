@@ -7,12 +7,16 @@ export type Project = {
   meta: { label: string; value: string }[];
   stats: { value: number; label: string }[];
   lede: string;
+  /** words in the lede picked out in the accent colour */
+  ledeAccents: string[];
   product: {
     url: string;
     domain: string;
     eyebrow: string;
     headline: [string, string];
     question: string;
+    /** the "Open product" button under the devices */
+    cta: { label: string };
   };
   chapters: string[];
   /**
@@ -21,7 +25,7 @@ export type Project = {
    */
   video?: string;
   /** Section headings, each as [first words, muted rest]. */
-  headings: { inside: [string, string]; more: [string, string] };
+  headings: { inside: [string, string]; showcase: [string, string]; more: [string, string] };
   /** "Inside the product": the features shown one after another, each with its visual. */
   inside: InsideItem[];
   /** "More projects" boxes at the bottom of the page, in display order (a joined 2-column grid). */
@@ -71,12 +75,14 @@ export const projects: Project[] = [
       { value: 5, label: "Countries" },
     ],
     lede: "A long-form investigation into how 29 Chinese state-backed and hybrid enterprises came to dominate Africa's critical-minerals supply chain.",
+    ledeAccents: ["29"],
     product: {
       url: "https://miningafrica.chinaglobalsouth.com",
       domain: "miningafrica.chinaglobalsouth.com",
       eyebrow: "Asian mining giants in Africa",
       headline: ["China's footprint", "in critical minerals."],
       question: "Who are the actors and stakeholders of China's engagement in critical minerals in Africa?",
+      cta: { label: "Open product" },
     },
     chapters: [
       "Energy Transition",
@@ -91,6 +97,7 @@ export const projects: Project[] = [
     ],
     headings: {
       inside: ["Inside", "the product."],
+      showcase: ["A kinetic timeline", "of energy machines."],
       more: ["More", "projects."],
     },
     inside: [
