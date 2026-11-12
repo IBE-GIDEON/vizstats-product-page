@@ -20,7 +20,7 @@ export type Project = {
    * placed in /public/media). Until it's set, the section shows the product's opening screen.
    */
   video?: string;
-  /** "More projects" boxes at the bottom of the page, in display order (4 per row on desktop). */
+  /** "More projects" boxes at the bottom of the page, in display order (a joined 2-column grid). */
   next: ProjectCard[];
 };
 
