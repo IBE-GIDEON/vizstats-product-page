@@ -245,7 +245,7 @@ export default function Bento({ project }: { project: Project }) {
   let splits = 0;
 
   return (
-    <section id="inside" className="relative bg-paper py-24 text-ink-1 md:py-36">
+    <section id="inside" data-surface="light" className="relative bg-paper py-24 text-ink-1 md:py-36">
       <div className="container-x">
         <Reveal className="mb-16 md:mb-24">
           <h2 className="font-display text-[clamp(32px,4.4vw,64px)] font-semibold leading-[1] tracking-[-0.045em]">

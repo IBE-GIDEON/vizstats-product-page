@@ -63,6 +63,11 @@ body {
   text-transform: uppercase;
 }
 
+/* where page text may start on large screens, so it never runs under the floating section index */
+:root {
+  --nav-clear: 252px;
+}
+
 @utility container-x {
   margin-inline: auto;
   width: 100%;
@@ -70,6 +75,10 @@ body {
   padding-inline: 20px;
   @media (width >= 48rem) {
     padding-inline: 40px;
+  }
+  /* backgrounds stay full width; the text column steps right only as far as it needs to */
+  @media (width >= 64rem) {
+    padding-left: max(40px, calc(var(--nav-clear) - max(0px, (100vw - 1320px) / 2)));
   }
 }
 

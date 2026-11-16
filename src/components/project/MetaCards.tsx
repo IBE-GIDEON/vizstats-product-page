@@ -137,7 +137,7 @@ export default function MetaCards({ items }: { items: Item[] }) {
         viewport={{ once: true, amount: 0.3 }}
         aria-label="Project facts"
         role="list"
-        className="flex cursor-grab select-none snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain scroll-smooth pb-2 pl-[max(20px,calc((100%-1320px)/2+20px))] pr-5 [scrollbar-width:none] scroll-pl-[max(20px,calc((100%-1320px)/2+20px))] data-[dragging=true]:cursor-grabbing md:gap-4 md:pl-[max(40px,calc((100%-1320px)/2+40px))] md:pr-10 md:scroll-pl-[max(40px,calc((100%-1320px)/2+40px))] [&::-webkit-scrollbar]:hidden"
+        className="flex cursor-grab select-none snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain scroll-smooth pb-2 pl-[max(20px,calc((100%-1320px)/2+20px))] pr-5 [scrollbar-width:none] scroll-pl-[max(20px,calc((100%-1320px)/2+20px))] data-[dragging=true]:cursor-grabbing md:gap-4 md:pl-[max(40px,calc((100%-1320px)/2+40px))] md:pr-10 md:scroll-pl-[max(40px,calc((100%-1320px)/2+40px))] lg:pl-[max(var(--nav-clear),calc((100%-1320px)/2+40px))] lg:scroll-pl-[max(var(--nav-clear),calc((100%-1320px)/2+40px))] [&::-webkit-scrollbar]:hidden"
       >
         {items.map((item, i) => (
           <motion.article

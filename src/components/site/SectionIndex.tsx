@@ -18,10 +18,22 @@ const SECTIONS: { key: keyof Project["sectionNames"]; target: string }[] = [
   { key: "contact", target: "#contact" },
 ];
 
-/** Width of the index on large screens; the page content is padded by the same amount. */
-export const INDEX_WIDTH = 272;
+/** Width of the floating index on large screens (page text starts clear of it: --nav-clear in globals.css). */
+export const INDEX_WIDTH = 236;
 
-const RULER_PX_PER_PERCENT = 10; // the ruler tape: 10 px per 1% of the page
+/** Colours for dark surfaces (default) and for light ones like the paper "Inside the product" section. */
+const TONE = {
+  dark: {
+    small: "text-white/65 hover:text-white [text-shadow:0_1px_14px_rgba(0,0,0,0.6)]",
+    big: "text-white [text-shadow:0_2px_18px_rgba(0,0,0,0.55)]",
+    logo: "drop-shadow-[0_1px_10px_rgba(0,0,0,0.5)]",
+  },
+  light: {
+    small: "text-ink-1/55 hover:text-ink-1",
+    big: "text-ink-1",
+    logo: "!text-green-2",
+  },
+} as const;
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 
@@ -37,7 +49,7 @@ const letter: Variants = {
   show: { opacity: 1, x: 0, y: 0, rotate: 0, transition: { duration: 0.55, ease: EASE } },
 };
 
-function BigName({ text, dir }: { text: string; dir: number }) {
+function BigName({ text, dir, color }: { text: string; dir: number; color: string }) {
   const words = text.toUpperCase().split(" ");
   return (
     <motion.p
@@ -47,7 +59,7 @@ function BigName({ text, dir }: { text: string; dir: number }) {
       exit="exit"
       custom={dir}
       aria-hidden
-      className="font-display text-[30px] font-bold leading-[0.98] tracking-[-0.01em] text-fog"
+      className={`font-display text-[30px] font-bold leading-[0.98] tracking-[-0.01em] transition-colors duration-300 ${color}`}
     >
       {words.map((w, wi) => (
         <span key={wi} className="inline-block whitespace-nowrap">
@@ -66,16 +78,20 @@ function BigName({ text, dir }: { text: string; dir: number }) {
 /**
  * Section index, after the reference: the full logo on top; the page's sections listed small,
  * right-aligned — the ones you've passed at the top, the current one big, the ones to come at the
- * bottom — and a ruler on the right edge that moves with the scroll. Always open; on phones it
- * becomes a slim bar with the logo, the current section and a progress line.
+ * bottom. Always open, floating over the full-width page with no background of its own; each part
+ * switches to dark text over light sections so it stays readable. On phones it becomes a slim bar
+ * with the logo, the current section and a progress line.
  */
 export default function SectionIndex({ names }: { names: Project["sectionNames"] }) {
   const lenis = useLenis();
   const [{ active, dir }, setState] = useState({ active: 0, dir: 0 });
 
-  const tapeRef = useRef<HTMLDivElement>(null);
-  const markerRef = useRef<HTMLSpanElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
+  // which parts of the floating index sit over a light section right now
+  const [light, setLight] = useState({ logo: false, top: false, bottom: false });
+  const logoRef = useRef<HTMLAnchorElement>(null);
+  const topRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLUListElement>(null);
 
   // which section is in view, and how far down the page we are (written straight to the DOM)
   useEffect(() => {
@@ -94,9 +110,18 @@ export default function SectionIndex({ names }: { names: Project["sectionNames"]
 
       setState((s) => (s.active === idx ? s : { active: idx, dir: idx > s.active ? 1 : -1 }));
 
-      if (tapeRef.current) tapeRef.current.style.transform = `translateY(${-page * 100 * RULER_PX_PER_PERCENT}px)`;
-      if (markerRef.current) markerRef.current.textContent = `${Math.round(page * 100)}%`;
       if (barRef.current) barRef.current.style.transform = `scaleX(${page})`;
+
+      // light sections are marked data-surface="light"; check what sits under the middle of each part
+      const surfaces = [...document.querySelectorAll<HTMLElement>('[data-surface="light"]')].map((el) => el.getBoundingClientRect());
+      const over = (el: HTMLElement | null) => {
+        if (!el) return false;
+        const r = el.getBoundingClientRect();
+        const y = r.top + r.height / 2;
+        return surfaces.some((b) => b.top <= y && b.bottom >= y);
+      };
+      const next = { logo: over(logoRef.current), top: over(topRef.current), bottom: over(bottomRef.current) };
+      setLight((t) => (t.logo === next.logo && t.top === next.top && t.bottom === next.bottom ? t : next));
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
@@ -123,76 +148,58 @@ export default function SectionIndex({ names }: { names: Project["sectionNames"]
   const current = items[active];
   const upcoming = items.slice(active + 1);
 
-  const small = (it: (typeof items)[number]) => (
+  const top = light.top ? TONE.light : TONE.dark;
+  const bottom = light.bottom ? TONE.light : TONE.dark;
+  const logo = light.logo ? TONE.light : TONE.dark;
+
+  const small = (it: (typeof items)[number], tone: (typeof TONE)[keyof typeof TONE]) => (
     <motion.li key={it.key} layout="position" layoutId={`idx-${it.key}`} transition={{ duration: 0.45, ease: EASE }}>
       <button
         type="button"
         onClick={() => go(it.i)}
-        className="w-full text-right font-display text-[12.5px] font-semibold uppercase leading-[1.38] tracking-[0.04em] text-ash-3 transition-colors duration-200 hover:text-fog focus-visible:text-fog focus-visible:outline-none"
+        className={`pointer-events-auto w-full text-right font-display text-[13px] font-semibold uppercase leading-[1.4] tracking-[0.04em] transition-colors duration-300 focus-visible:outline-none ${tone.small}`}
       >
         {it.name}
       </button>
     </motion.li>
   );
 
-  // ruler marks every 5% of the page
-  const marks = Array.from({ length: 21 }, (_, k) => k * 5);
-
   return (
     <>
       {/* ── large screens: always-open index ─────────────────────────── */}
       <aside
         aria-label="Sections"
-        className="fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-line bg-black lg:flex"
+        // no background: it floats over the page; only the logo and names catch the mouse
+        className="pointer-events-none fixed inset-y-0 left-0 z-40 hidden flex-col lg:flex"
         style={{ width: INDEX_WIDTH }}
       >
-        <Link href="/" aria-label="VizStats home" className="flex shrink-0 items-center gap-3 px-6 pb-7 pt-7">
-          <LogoMark size={30} />
-          <Wordmark className="!text-[22px]" />
+        <Link ref={logoRef} href="/" aria-label="VizStats home" className="pointer-events-auto flex w-fit shrink-0 items-center gap-3 px-6 pb-7 pt-7">
+          <LogoMark size={30} className={`transition-colors duration-300 ${logo.logo}`} />
+          <Wordmark className={`!text-[22px] transition-colors duration-300 ${logo.logo}`} />
         </Link>
 
-        <div className="relative min-h-0 flex-1 overflow-hidden border-t border-line">
+        <div className="relative min-h-0 flex-1 overflow-hidden">
           <LayoutGroup>
-            <nav className="absolute inset-y-0 left-[46px] right-0 flex flex-col pb-8 pl-4 pr-5 pt-5">
-              <ul>{past.map(small)}</ul>
+            <nav className="absolute inset-0 flex flex-col px-6 pb-8 pt-5">
+              <div ref={topRef}>
+                <ul>{past.map((it) => small(it, top))}</ul>
 
-              {/* the current section, big */}
-              <div className="relative mt-3 min-h-[70px] text-right">
-                <button type="button" onClick={() => go(current.i)} className="w-full text-right" aria-current="location">
-                  <span className="sr-only">{current.name}</span>
-                  <AnimatePresence mode="wait" initial={false} custom={dir}>
-                    <BigName key={current.key} text={current.name} dir={dir} />
-                  </AnimatePresence>
-                </button>
+                {/* the current section, big */}
+                <div className="relative mt-3 min-h-[70px] text-right">
+                  <button type="button" onClick={() => go(current.i)} className="pointer-events-auto w-full text-right" aria-current="location">
+                    <span className="sr-only">{current.name}</span>
+                    <AnimatePresence mode="wait" initial={false} custom={dir}>
+                      <BigName key={current.key} text={current.name} dir={dir} color={top.big} />
+                    </AnimatePresence>
+                  </button>
+                </div>
               </div>
 
-              <ul className="mt-auto">{upcoming.map(small)}</ul>
+              <ul ref={bottomRef} className="mt-auto">
+                {upcoming.map((it) => small(it, bottom))}
+              </ul>
             </nav>
           </LayoutGroup>
-
-          {/* ruler, against the left edge: the tape moves with the page; the marker reads how far down you are */}
-          <div aria-hidden className="absolute inset-y-0 left-0 w-[46px] border-r border-line [mask-image:linear-gradient(to_bottom,transparent,#000_12%,#000_88%,transparent)]">
-            <div ref={tapeRef} className="absolute inset-x-0 top-[38%] will-change-transform">
-              <div
-                className="absolute left-0 top-0 w-[10px] bg-[repeating-linear-gradient(to_bottom,rgba(255,255,255,0.16)_0_1px,transparent_1px_10px)]"
-                style={{ height: 100 * RULER_PX_PER_PERCENT + 1 }}
-              />
-              {marks.map((m) => (
-                <div key={m} className="absolute left-0 flex items-center gap-1.5" style={{ top: m * RULER_PX_PER_PERCENT - 6 }}>
-                  <span className="h-px w-[16px] bg-white/30" />
-                  <span className="font-mono text-[9.5px] tabular-nums text-ash-3">{m}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          {/* the marker line, across the whole index */}
-          <div aria-hidden className="pointer-events-none absolute inset-x-0 top-[38%]">
-            <div className="h-px bg-white/[0.05]" />
-            <div className="absolute left-0 top-0 flex -translate-y-1/2 items-center gap-1.5">
-              <span className="h-[2px] w-[22px] bg-green" />
-              <span ref={markerRef} className="font-mono text-[10px] tabular-nums text-green">0%</span>
-            </div>
-          </div>
         </div>
       </aside>
 
