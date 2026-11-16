@@ -153,7 +153,7 @@ export default function SectionIndex({ names }: { names: Project["sectionNames"]
 
         <div className="relative min-h-0 flex-1 overflow-hidden border-t border-line">
           <LayoutGroup>
-            <nav className="absolute inset-y-0 left-0 right-[46px] flex flex-col pb-8 pl-5 pr-4 pt-5">
+            <nav className="absolute inset-y-0 left-[46px] right-0 flex flex-col pb-8 pl-4 pr-5 pt-5">
               <ul>{past.map(small)}</ul>
 
               {/* the current section, big */}
@@ -170,17 +170,17 @@ export default function SectionIndex({ names }: { names: Project["sectionNames"]
             </nav>
           </LayoutGroup>
 
-          {/* ruler: the tape moves with the page; the marker reads how far down you are */}
-          <div aria-hidden className="absolute inset-y-0 right-0 w-[46px] border-l border-line [mask-image:linear-gradient(to_bottom,transparent,#000_12%,#000_88%,transparent)]">
+          {/* ruler, against the left edge: the tape moves with the page; the marker reads how far down you are */}
+          <div aria-hidden className="absolute inset-y-0 left-0 w-[46px] border-r border-line [mask-image:linear-gradient(to_bottom,transparent,#000_12%,#000_88%,transparent)]">
             <div ref={tapeRef} className="absolute inset-x-0 top-[38%] will-change-transform">
               <div
-                className="absolute right-0 top-0 w-[10px] bg-[repeating-linear-gradient(to_bottom,rgba(255,255,255,0.16)_0_1px,transparent_1px_10px)]"
+                className="absolute left-0 top-0 w-[10px] bg-[repeating-linear-gradient(to_bottom,rgba(255,255,255,0.16)_0_1px,transparent_1px_10px)]"
                 style={{ height: 100 * RULER_PX_PER_PERCENT + 1 }}
               />
               {marks.map((m) => (
-                <div key={m} className="absolute right-0 flex items-center gap-1.5" style={{ top: m * RULER_PX_PER_PERCENT - 6 }}>
-                  <span className="font-mono text-[9.5px] tabular-nums text-ash-3">{m}</span>
+                <div key={m} className="absolute left-0 flex items-center gap-1.5" style={{ top: m * RULER_PX_PER_PERCENT - 6 }}>
                   <span className="h-px w-[16px] bg-white/30" />
+                  <span className="font-mono text-[9.5px] tabular-nums text-ash-3">{m}</span>
                 </div>
               ))}
             </div>
@@ -188,9 +188,9 @@ export default function SectionIndex({ names }: { names: Project["sectionNames"]
           {/* the marker line, across the whole index */}
           <div aria-hidden className="pointer-events-none absolute inset-x-0 top-[38%]">
             <div className="h-px bg-white/[0.05]" />
-            <div className="absolute right-0 top-0 flex -translate-y-1/2 items-center gap-1.5">
-              <span ref={markerRef} className="font-mono text-[10px] tabular-nums text-green">0%</span>
+            <div className="absolute left-0 top-0 flex -translate-y-1/2 items-center gap-1.5">
               <span className="h-[2px] w-[22px] bg-green" />
+              <span ref={markerRef} className="font-mono text-[10px] tabular-nums text-green">0%</span>
             </div>
           </div>
         </div>
