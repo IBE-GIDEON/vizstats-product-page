@@ -48,7 +48,7 @@ export default function NextProject({ next: cards, heading }: { next: ProjectCar
   if (cards.length === 0) return null;
 
   return (
-    <section aria-label="More projects" className="relative pb-24 md:pb-32">
+    <section id="more" aria-label="More projects" className="relative pb-24 md:pb-32">
       <div className="container-x">
         <Reveal className="mb-10 md:mb-14">
           <h2 className="font-display text-[clamp(32px,4.4vw,64px)] font-semibold leading-[1] tracking-[-0.045em]">

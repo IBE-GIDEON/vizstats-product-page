@@ -25,6 +25,8 @@ export type Project = {
   video: string;
   /** The welcome (first) screen image. Shown instead of the product's opening screen when set. */
   heroImage: HeroImage;
+  /** Names in the side index, top to bottom: one per section of the page. */
+  sectionNames: { project: string; overview: string; inside: string; devices: string; more: string; contact: string };
   /** Section headings, each as [first words, muted rest]. */
   headings: { inside: [string, string]; more: [string, string] };
   /** The iPad + iPhone section: heading, optional real screenshots, and the button under them. */
@@ -184,6 +186,14 @@ export const projects: Project[] = [
       "The Tensions",
       "The Verdict",
     ],
+    sectionNames: {
+      project: "Project",
+      overview: "Overview",
+      inside: "Inside",
+      devices: "Devices",
+      more: "More work",
+      contact: "Contact",
+    },
     headings: {
       inside: ["Inside", "the product."],
       more: ["More", "projects."],

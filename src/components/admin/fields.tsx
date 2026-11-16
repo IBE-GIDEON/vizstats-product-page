@@ -60,6 +60,11 @@ const LABELS: Record<string, string> = {
   phoneImage: "iPhone screen",
   imageAlt: "Describe the image (for screen readers)",
   panels: "Boxes",
+  sectionNames: "Side index",
+  project: "Welcome screen",
+  overview: "Facts & intro",
+  devices: "Devices section",
+  contact: "Contact",
   caption: "Caption (optional)",
 };
 

@@ -25,6 +25,7 @@ function sectionsFor(content: Content): Section[] {
       { id: `p${i}-meta`, group, title: "Fact cards", path: base, keys: ["meta"] },
       { id: `p${i}-intro`, group, title: "Intro statement", path: base, keys: ["lede", "ledeAccents"] },
       { id: `p${i}-product`, group, title: "Product", path: [...base, "product"] },
+      { id: `p${i}-index`, group, title: "Side index", path: [...base, "sectionNames"] },
       { id: `p${i}-headings`, group, title: "Section headings", path: [...base, "headings"] },
       { id: `p${i}-inside`, group, title: "Inside the product", path: base, keys: ["inside"] },
       { id: `p${i}-devices`, group, title: "Devices section", path: [...base, "showcase"] },

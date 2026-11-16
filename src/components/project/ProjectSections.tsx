@@ -1,6 +1,7 @@
 "use client";
 
 import Footer from "@/components/site/Footer";
+import SectionIndex, { INDEX_WIDTH } from "@/components/site/SectionIndex";
 import { useContent } from "@/lib/cms/useContent";
 import Bento from "./Bento";
 import NextProject from "./NextProject";
@@ -15,11 +16,13 @@ export default function ProjectSections({ slug }: { slug: string }) {
 
   return (
     <>
-      {/* opening: straight onto the project video — plain page flow */}
-      <Opening project={project} />
+      {/* the section index: always open on large screens, a slim bar on phones */}
+      <SectionIndex names={project.sectionNames} />
 
-      {/* content clears the icon rail on desktop */}
-      <div className="md:pl-[72px]">
+      {/* the page clears the index on large screens */}
+      <div className="lg:pl-[var(--index-w)]" style={{ "--index-w": `${INDEX_WIDTH}px` } as React.CSSProperties}>
+        {/* opening: straight onto the project video — plain page flow */}
+        <Opening project={project} />
         <Overview project={project} />
         <Bento project={project} />
         <Showcase project={project} />

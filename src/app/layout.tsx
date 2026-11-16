@@ -3,7 +3,6 @@ import { Geist_Mono, Inter, Inter_Tight, Russo_One } from "next/font/google";
 import "lenis/dist/lenis.css";
 import "./globals.css";
 import SmoothScroll from "@/components/providers/SmoothScroll";
-import SideRail from "@/components/site/SideRail";
 
 const interTight = Inter_Tight({
   variable: "--font-inter-tight",
@@ -50,7 +49,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body className="min-h-full bg-ink text-fog">
         <SmoothScroll>
-          <SideRail />
           {children}
         </SmoothScroll>
         <div className="grain" aria-hidden />

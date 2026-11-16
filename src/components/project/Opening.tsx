@@ -15,7 +15,7 @@ export default function Opening({ project }: { project: Project }) {
   const mediaInView = useInView(mediaRef, { amount: 0.3 });
 
   return (
-    <section aria-label="Project" className="relative bg-black">
+    <section id="project" aria-label="Project" className="relative bg-black">
       <h1 className="sr-only">{project.titleLines.join(" ")}</h1>
 
       {/* `isolate` keeps the video's blur layers under the fact cards that overlap its bottom edge */}
